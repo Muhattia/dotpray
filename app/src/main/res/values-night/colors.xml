@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Night palette: the original pure-black Nothing look. -->
+    <color name="bg">#FF000000</color>
+    <color name="surface">#FF0A0A0A</color>
+    <color name="surface_high">#FF121212</color>
+    <color name="surface_press">#FF1A1A1A</color>
+    <color name="line">#FF1F1F1F</color>
+    <color name="line_soft">#FF141414</color>
+    <color name="fg">#FFF4F4F2</color>
+    <color name="fg_dim">#FF8E8E8E</color>
+    <color name="fg_faint">#FF565656</color>
+    <color name="active_dim">#FF8A8A8A</color>
+    <color name="fg_past">#FF6E6E6E</color>
+    <color name="accent">#FFD71921</color>
+    <color name="accent_dim">#FF7A1219</color>
+    <color name="accent_soft">#26D71921</color>
+    <color name="icon_bg">#FF000000</color>
+    <color name="ripple">#26FFFFFF</color>
+    <color name="ripple_inverse">#33000000</color>
+    <color name="dialog_bg">#FF090909</color>
+    <color name="dialog_line">#FF232323</color>
+    <color name="track">#FF262626</color>
+    <color name="dot_field">#FFFFFFFF</color>
+    <color name="arc">#FFFFFFFF</color>
+    <color name="transparent">#00000000</color>
+</resources>

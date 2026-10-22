@@ -1,0 +1,17 @@
+# Build and release artifacts
+build/
+dist/
+*.apk
+*.idsig
+
+# Local signing material
+keystore/
+*.keystore
+*.jks
+
+# Python / editor / OS caches
+__pycache__/
+*.py[cod]
+.gradle/
+.idea/
+.DS_Store

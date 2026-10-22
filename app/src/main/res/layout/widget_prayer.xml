@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The whole card is drawn by WidgetRenderer into a bitmap: RemoteViews cannot
+  carry a custom Typeface, so laying the widget out with TextViews would show
+  the system font instead of Doto. Only the click targets remain real views.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/wRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/wCanvas"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/app_name"
+        android:scaleType="fitXY"
+        android:src="@drawable/widget_preview" />
+
+</FrameLayout>

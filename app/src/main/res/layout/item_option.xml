@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_option"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingTop="14dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="14dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/optTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MAKKAH"
+            android:textSize="14sp"
+            style="@style/Value" />
+
+        <TextView
+            android:id="@+id/optSub"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="SA · 21.422°N / 39.826°E"
+            style="@style/LabelFaint" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/optMark"
+        android:layout_width="7dp"
+        android:layout_height="7dp"
+        android:layout_marginStart="12dp"
+        android:background="@drawable/bg_dot"
+        android:visibility="gone" />
+</LinearLayout>
