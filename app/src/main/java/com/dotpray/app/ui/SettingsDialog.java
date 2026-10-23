@@ -2,7 +2,9 @@ package com.dotpray.app.ui;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Intent;
 import android.graphics.Color;
+import android.provider.Settings;
 import android.graphics.drawable.ColorDrawable;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -15,6 +17,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.dotpray.app.R;
+import com.dotpray.app.alerts.NotificationHelper;
 import com.dotpray.app.data.PrayerPrefs;
 import com.dotpray.app.prayer.AsrMethod;
 
@@ -45,6 +48,7 @@ public class SettingsDialog {
     private TextView asrHanafi;
     private Switch clockSwitch;
     private Switch alertsSwitch;
+    private TextView alertsHint;
 
     public SettingsDialog(Activity activity, Callback callback) {
         this.activity = activity;
@@ -68,8 +72,10 @@ public class SettingsDialog {
         asrHanafi = content.findViewById(R.id.btnAsrHanafi);
         clockSwitch = content.findViewById(R.id.switchClock);
         alertsSwitch = content.findViewById(R.id.switchAlerts);
+        alertsHint = content.findViewById(R.id.alertsHint);
 
         content.findViewById(R.id.btnCloseSettings).setOnClickListener(v -> dialog.dismiss());
+        alertsHint.setOnClickListener(v -> openNotificationSettings());
         content.findViewById(R.id.btnWidgetWide).setOnClickListener(v -> callback.onAddWidget(true));
         content.findViewById(R.id.btnWidgetSmall).setOnClickListener(v -> callback.onAddWidget(false));
 
@@ -129,6 +135,7 @@ public class SettingsDialog {
     /** Reflects an alert switch change that happened outside the dialog. */
     public void setAlertsChecked(boolean checked) {
         if (alertsSwitch != null) alertsSwitch.setChecked(checked);
+        updateAlertsHint();
     }
 
     private void selectTheme(int mode) {
@@ -140,6 +147,23 @@ public class SettingsDialog {
     private void refreshValues() {
         updateThemeStyles();
         updateAsrStyles();
+        updateAlertsHint();
+    }
+
+    private void updateAlertsHint() {
+        if (alertsHint == null) return;
+        alertsHint.setVisibility(NotificationHelper.notificationsEnabled(activity)
+                ? View.GONE : View.VISIBLE);
+    }
+
+    private void openNotificationSettings() {
+        try {
+            Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, activity.getPackageName());
+            activity.startActivity(intent);
+        } catch (RuntimeException ignored) {
+            // The system settings screen is unavailable; the hint stays visible.
+        }
     }
 
     private void updateThemeStyles() {

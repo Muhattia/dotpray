@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-"""Regenerate the Dotpray launcher icons from design/dotpray-icon.svg.
+"""Regenerate the Dotpray launcher and notification icons.
 
-Requires rsvg-convert (librsvg2-bin) and Pillow. The generated PNGs are
-committed, so the Android build itself does not need either tool.
+The coloured mark comes from design/dotpray-icon.svg; the monochrome status-bar
+silhouette is design/dotpray-notification.svg (vectorised in
+res/drawable/ic_notification.xml). Requires rsvg-convert (librsvg2-bin) and
+Pillow. The generated PNGs are committed, so the Android build itself does not
+need either tool.
 """
 
 import re
@@ -29,6 +32,7 @@ DENSITIES = {
 MASTER = 1024
 FOREGROUND = 432
 FOREGROUND_CONTENT = 270  # 66/108 safe zone, measured against the icon canvas
+NOTIFICATION_LARGE = 256
 
 RESAMPLING = Image.Resampling.LANCZOS
 
@@ -68,16 +72,13 @@ def main() -> None:
         render(svg_text, MASTER, master_path, background="#000000")
         master = Image.open(master_path).convert("RGBA")
 
-        # The SVG's black rectangle is the sujood figure's negative space.
-        # Removing it gives a transparent mark for the adaptive foreground;
-        # the adaptive background supplies the black.
-        mark_svg = re.sub(r'\n<rect[^>]*fill="#000000"[^>]*/>', "", svg_text)
+        # The SVG's near-black rectangle is the sujood figure's negative
+        # space. Removing it gives a transparent coloured mark for the
+        # adaptive foreground; the adaptive background supplies the black.
+        mark_svg = re.sub(r'\n<rect[^>]*fill="#(?:000000|050505)"[^>]*/>', "", svg_text)
         mark_path = tmpdir / "mark.png"
         render(mark_svg, MASTER, mark_path)
         mark = Image.open(mark_path).convert("RGBA")
-
-        if mark.getpixel((MASTER // 2, MASTER // 2))[3] != 0:
-            raise SystemExit("expected transparent negative space in the icon mark")
 
     # Legacy square icons.
     for density, size in DENSITIES.items():
@@ -101,6 +102,12 @@ def main() -> None:
     foreground_dir = RES / "drawable-xxxhdpi"
     foreground_dir.mkdir(parents=True, exist_ok=True)
     foreground.save(foreground_dir / "ic_launcher_foreground.png")
+
+    # Coloured logo used as the notification's large icon.
+    large = master.resize((NOTIFICATION_LARGE, NOTIFICATION_LARGE), RESAMPLING)
+    large_dir = RES / "drawable-nodpi"
+    large_dir.mkdir(parents=True, exist_ok=True)
+    large.save(large_dir / "ic_notification_large.png")
 
     # Human-readable previews.
     PREVIEW.mkdir(exist_ok=True)

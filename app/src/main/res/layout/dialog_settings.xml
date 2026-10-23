@@ -35,7 +35,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="14dp"
-                android:text="1.9"
+                android:text="1.10"
                 style="@style/LabelFaint" />
 
             <TextView
@@ -225,6 +225,23 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/alertsHint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:paddingStart="4dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="4dp"
+            android:paddingBottom="5dp"
+            android:text="NOTIFICATIONS BLOCKED · TAP TO ALLOW"
+            android:textColor="@color/accent"
+            android:visibility="gone"
+            style="@style/Label" />
 
         <!-- widgets -->
         <TextView

@@ -52,8 +52,21 @@ public class PrayerWidgetProvider extends AppWidgetProvider {
                 || Intent.ACTION_DATE_CHANGED.equals(action)
                 || Intent.ACTION_USER_PRESENT.equals(action);
 
-        if (needsRefresh) {
-            WidgetUpdater.updateAll(context);
+        if (!needsRefresh) return;
+
+        WidgetUpdater.updateAll(context);
+        WidgetTick.schedule(context);
+
+        // A minute tick or the post-prayer roll-over must never re-book the
+        // prayer alert. At the boundary the snapshot has already moved to the
+        // following prayer, so rescheduling there would cancel the alert that
+        // is about to fire. Re-book only when the clock/zone/package changed
+        // or the device rebooted.
+        if (Intent.ACTION_BOOT_COMPLETED.equals(action)
+                || Intent.ACTION_MY_PACKAGE_REPLACED.equals(action)
+                || Intent.ACTION_TIME_CHANGED.equals(action)
+                || Intent.ACTION_TIMEZONE_CHANGED.equals(action)
+                || Intent.ACTION_DATE_CHANGED.equals(action)) {
             PrayerAlarmScheduler.reschedule(context);
         }
     }

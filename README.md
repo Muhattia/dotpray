@@ -20,7 +20,7 @@ No ads, no tracking, no AndroidX. The app has no `INTERNET` permission.
 (`tools/render_preview.py`), not screenshots. The app and both widgets share
 the in-app System / Light / Dark choice.*
 
-*Version 1.9 — aligned status dots and a full-width widget prayer strip.*
+*Version 1.10 — reliable prayer alerts, plus the coloured logo and monochrome status-bar icon.*
 
 ---
 
@@ -35,7 +35,7 @@ the in-app System / Light / Dark choice.*
 | **Current location** | GPS fix, rechecked every 15 minutes while the app is open, named by the system geocoder with a nearest-city fallback |
 | **Hijri date** | Umm al-Qura calendar through the platform chronology |
 | **Qibla** | Great-circle bearing to the Kaaba from your coordinates |
-| **Prayer alerts** | Notification at each prayer time, survives reboot and time-zone changes |
+| **Prayer alerts** | Notification at each prayer time, exact when the OS allows it, re-armed after reboot, time-zone changes and app updates |
 | **12 / 24 hour** | Switchable, on the device and in the widget |
 | **System / Light / Dark** | A three-way switch that repaints the app and both widgets |
 | **Nothing styling** | Pure black in dark mode, paper white in light mode, hairline borders, dot-matrix backdrop, dot-matrix type throughout, one red accent |
@@ -59,7 +59,7 @@ build it locally with `./build.sh`:
 
 ```bash
 ./build.sh
-adb install -r dist/dotpray-1.9.apk
+adb install -r dist/dotpray-1.10.apk
 ```
 
 Or copy the built APK to the phone and open it (you will need to allow
@@ -86,6 +86,15 @@ OS allows it and `setAndAllowWhileIdle` otherwise), immediately when the device
 is unlocked, on every prayer boundary, on resize, on boot, whenever the clock
 or the time zone changes, and immediately when the app's theme choice or
 location changes.
+
+Prayer alerts use a separate alarm from the widget roll-over. The alert is
+booked for the prayer time (exact when the OS grants exact-alarm access, with
+`setAndAllowWhileIdle` as the fallback); the widget alarm fires shortly after
+and never cancels a waiting alert. Enabling alerts asks for notification
+permission on Android 13+, and Settings shows a red `NOTIFICATIONS BLOCKED`
+hint if notifications or the prayer channel are turned off later. The alert
+also re-arms when the app is opened, so a force-stop or an OEM battery manager
+cannot leave the preference on with no alarm behind it.
 
 ---
 
@@ -114,7 +123,7 @@ Requirements:
 | Build tools | `37.0.0` |
 | minSdk / targetSdk | 26 / 35 |
 
-Output: `dist/dotpray-1.9.apk`, signed with a debug key that is generated on
+Output: `dist/dotpray-1.10.apk`, signed with a debug key that is generated on
 first run at `keystore/dotpray.keystore` (outside `build/`, so rebuilds keep the
 same certificate and new versions install over old ones).
 
@@ -204,16 +213,17 @@ dotpray/
 │   ├── gen_live_digits.py       traces Doto digits into widget vector drawables
 │   ├── make_icons.py            regenerates launcher icons from the SVG
 │   └── render_preview.py        renders preview/*.png from the real layouts
-└── dist/dotpray-1.9.apk
+└── dist/dotpray-1.10.apk
 ```
 
 ### Design details
 
-* **App icon.** The red circular mark is traced in
-  `design/dotpray-icon.svg`; `tools/make_icons.py` regenerates every launcher
-  PNG and the adaptive foreground with `rsvg-convert` and Pillow. The SVG's
-  black rectangle supplies the sujood figure; the adaptive foreground keeps
-  the negative space transparent over a black background.
+* **App icon.** The coloured red circular mark is
+  `design/dotpray-icon.svg`; the monochrome sujood silhouette is
+  `design/dotpray-notification.svg`, vectorised as
+  `drawable/ic_notification.xml` for the status bar. `tools/make_icons.py`
+  regenerates every launcher PNG, the adaptive foreground and the coloured
+  notification large icon with `rsvg-convert` and Pillow.
 * **Typeface.** Everything is set in
   [Doto](https://fonts.google.com/specimen/Doto) (SIL Open Font License 1.1),
   instanced to static regular/bold/black weights; there is no system font

@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.RelativeSizeSpan;
@@ -26,6 +27,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.dotpray.app.alerts.NotificationHelper;
 import com.dotpray.app.alerts.PrayerAlarmScheduler;
 import com.dotpray.app.data.Format;
 import com.dotpray.app.data.LocalityResolver;
@@ -351,8 +353,17 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
     @Override
     protected void onResume() {
         super.onResume();
+        // Never leave the switch claiming alerts are on while the system is
+        // silently dropping them (permission revoked or channel blocked).
+        if (prefs.isAlertsEnabled() && !NotificationHelper.notificationsEnabled(this)) {
+            prefs.setAlertsEnabled(false);
+            if (settingsDialog != null) settingsDialog.setAlertsChecked(false);
+        }
         refresh();
         WidgetUpdater.updateAll(this);
+        // A force-stop, battery manager or app update can clear the alarm
+        // while the preference stays on. Re-arm whenever the app is opened.
+        if (prefs.isAlertsEnabled()) PrayerAlarmScheduler.reschedule(this);
         startTicker();
         startLocationRefresh();
     }
@@ -434,6 +445,13 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
             pendingAlerts = true;
             requestPermissions(new String[]{Perm.POST_NOTIFICATIONS},
                     REQUEST_NOTIFICATIONS);
+            return;
+        }
+        if (!NotificationHelper.notificationsEnabled(this)) {
+            prefs.setAlertsEnabled(false);
+            if (settingsDialog != null) settingsDialog.setAlertsChecked(false);
+            toast("Allow notifications for Dotpray");
+            openNotificationSettings();
             return;
         }
         prefs.setAlertsEnabled(true);
@@ -652,9 +670,10 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
 
         if (requestCode == REQUEST_NOTIFICATIONS) {
-            prefs.setAlertsEnabled(granted);
-            if (settingsDialog != null) settingsDialog.setAlertsChecked(granted);
-            if (granted) {
+            boolean alertsOn = granted && NotificationHelper.notificationsEnabled(this);
+            prefs.setAlertsEnabled(alertsOn);
+            if (settingsDialog != null) settingsDialog.setAlertsChecked(alertsOn);
+            if (alertsOn) {
                 PrayerAlarmScheduler.reschedule(this);
                 toast("Prayer alerts on");
             } else {
@@ -712,6 +731,16 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
         super.onNewIntent(intent);
         setIntent(intent);
         handleIntent(intent);
+    }
+
+    private void openNotificationSettings() {
+        try {
+            Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+            startActivity(intent);
+        } catch (RuntimeException e) {
+            toast("Open system settings to allow notifications");
+        }
     }
 
     private void toast(String message) {
