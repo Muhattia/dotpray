@@ -105,9 +105,12 @@ public final class WidgetRenderer {
         // width. Lift the big next-prayer time above it instead of letting the
         // two overlap on the right.
         float nameBase = divider - ink.dp(56);
-        float clockBase = divider - ink.dp(34);
-        float metaBase = divider - ink.dp(22);
-        float countBase = divider - ink.dp(8);
+        // Keep the hero time slightly above the meta line. The meta line is
+        // allowed to run under it horizontally, so it needs a clear vertical
+        // gap rather than a shorter string.
+        float clockBase = divider - ink.dp(42);
+        float metaBase = divider - ink.dp(19);
+        float countBase = divider - ink.dp(6);
 
         c.drawCircle(pad + ink.dp(3), ink.dp(19), ink.dp(3), ink.fill(ACCENT));
         ink.text("NEXT PRAYER", pad + ink.dp(13), header,
@@ -130,7 +133,7 @@ public final class WidgetRenderer {
         Live countdownSeconds = countdownLine(ink, snapshot, now, pad, countBase, 13f,
                 liveSeconds, scale, offsetX, offsetY);
 
-        float clockSize = 46;
+        float clockSize = 44;
         String period = use24 ? "" : Format.meridiem(snapshot.next.local);
         String time = use24 ? Format.time24(snapshot.next.local)
                 : Format.time12(snapshot.next.local);
@@ -154,8 +157,8 @@ public final class WidgetRenderer {
             boolean active = prayers[i] == snapshot.next.prayer;
             PrayerCalculator.Entry entry = snapshot.today.get(i);
             // After Isha the next prayer is tomorrow's Fajr. Keep the strip
-            // useful by lighting its Fajr slot with that upcoming time; the
-            // hero's meta line above says TOMORROW.
+            // useful by lighting its Fajr slot with that upcoming time. The
+            // meta line already shows tomorrow's date.
             if (active && snapshot.nextIsTomorrow) entry = snapshot.next;
             ink.text(prayers[i].label.toUpperCase(Locale.US), x, divider + ink.dp(16),
                     ink.label(9), active ? ink.fg : ink.faint, 0.08f, Paint.Align.LEFT);
@@ -331,10 +334,9 @@ public final class WidgetRenderer {
         String date = DateTimeFormatter.ofPattern("EEE d MMM", Locale.US)
                 .format(snapshot.next.local).toUpperCase(Locale.US);
         String hijri = hijri(snapshot);
-        String status = snapshot.nextIsTomorrow ? "TOMORROW" : "TODAY";
-        return hijri.isEmpty()
-                ? date + " \u00b7 " + status
-                : date + " \u00b7 " + hijri + " \u00b7 " + status;
+        // No TODAY / TOMORROW suffix: it ran under the hero time and made the
+        // line feel crowded. Tomorrow is already clear from the date itself.
+        return hijri.isEmpty() ? date : date + " \u00b7 " + hijri;
     }
 
     private static String smallMeta(PrayerClock.Snapshot snapshot) {

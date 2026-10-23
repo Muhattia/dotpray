@@ -284,7 +284,7 @@ def render_app(path=None):
     spaced(dr, (W // 2, y), "Calculated on device · No ads · No tracking",
            f_label_faint, FG_FAINT, 0.14, anchor="ma")
     y += d(20)
-    spaced(dr, (W // 2, y), "DOTPRAY 1.1 · DOTO (OFL)",
+    spaced(dr, (W // 2, y), "DOTPRAY 1.7 · DOTO (OFL)",
            f_label_faint, FOOTER, 0.14, anchor="ma")
 
     path = path or os.path.join(OUT_DIR, "app-screen.png")
@@ -357,15 +357,15 @@ def render_widget_wide(width_dp=326, height_dp=150, path=None, drawable=None):
     header = d(23)
     divider = DH - d(42)
     name_base = divider - d(56)
-    clock_base = divider - d(34)
-    meta_base = divider - d(22)
-    count_base = divider - d(8)
+    clock_base = divider - d(42)
+    meta_base = divider - d(19)
+    count_base = divider - d(6)
 
     f_10b = doto("bold", 10)
     f_9b = doto("bold", 9)
     f_11b = doto("bold", 11)
     f_22 = doto("bold", 22)
-    f_46 = doto("bold", 46)
+    f_44 = doto("bold", 44)
     f_14 = doto("bold", 14)
     f_13 = doto("regular", 13)
 
@@ -375,10 +375,10 @@ def render_widget_wide(width_dp=326, height_dp=150, path=None, drawable=None):
     _spaced_px(cd, (DW - pad, header), "21:42:05", f_11b, d(11), FG, 0.0, "right")
 
     cd.text((pad, name_base), "MAGHRIB", font=f_22, fill=FG, anchor="ls")
-    _spaced_px(cd, (pad, meta_base), "FRI 23 OCT · 12 JUM I 1448 · TODAY",
+    _spaced_px(cd, (pad, meta_base), "FRI 23 OCT · 12 JUM I 1448",
                f_9b, d(9), FG_FAINT, 0.04)
     _spaced_px(cd, (pad, count_base), "IN 1:25:12", f_13, d(13), FG, 0.0)
-    cd.text((DW - pad, clock_base), "18:17", font=f_46, fill=FG, anchor="rs")
+    cd.text((DW - pad, clock_base), "18:17", font=f_44, fill=FG, anchor="rs")
 
     # progress hairline
     cd.line([pad, divider, DW - pad, divider], fill=CARD_LINE, width=max(1, d(1)))
