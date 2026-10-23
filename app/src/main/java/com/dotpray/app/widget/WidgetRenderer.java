@@ -224,27 +224,28 @@ public final class WidgetRenderer {
 
     /**
      * Draws the static half of the wall clock. With live seconds the bitmap
-     * ends at the colon and the glyph-pair flipper covers both digits; without
-     * them the complete HH:MM:SS text stays in the bitmap for older releases.
+     * ends at the colon and the glyph-pair flipper covers both digits. Before
+     * Android 12 the flippers cannot be positioned reliably, so the fallback
+     * is an honest HH:MM clock rather than a stale seconds value.
      */
     private static Live currentClock(Ink ink, Instant now, boolean use24, float right,
                                      float baseline, float sizeSp, boolean live,
                                      float scale, float offsetX, float offsetY) {
         ZonedDateTime local = now.atZone(ZoneId.systemDefault());
         Paint paint = ink.display(sizeSp);
-        String prefix = (use24 ? Format.time24(local) : Format.time12(local)) + ":";
+        String clock = use24 ? Format.time24(local) : Format.time12(local);
         String suffix = use24 ? "" : " " + Format.meridiem(local);
-        float cell = ink.dp(CELL_ADVANCE * sizeSp);
-        float suffixWidth = suffix.isEmpty() ? 0f : paint.measureText(suffix);
-        float secondsLeft = right - suffixWidth - cell * 2f;
 
         if (!live) {
-            String seconds = String.format(Locale.US, "%02d", local.getSecond());
-            ink.text(prefix + seconds + suffix, right, baseline, paint, ink.fg, 0f,
+            ink.text(clock + suffix, right, baseline, paint, ink.fg, 0f,
                     Paint.Align.RIGHT);
             return null;
         }
 
+        String prefix = clock + ":";
+        float cell = ink.dp(CELL_ADVANCE * sizeSp);
+        float suffixWidth = suffix.isEmpty() ? 0f : paint.measureText(suffix);
+        float secondsLeft = right - suffixWidth - cell * 2f;
         ink.text(prefix, secondsLeft, baseline, paint, ink.fg, 0f, Paint.Align.RIGHT);
         ink.text(suffix, right, baseline, paint, ink.fg, 0f, Paint.Align.RIGHT);
         return live(ink, secondsLeft, baseline, sizeSp, true, scale, offsetX, offsetY);

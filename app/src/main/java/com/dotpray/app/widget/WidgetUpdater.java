@@ -188,7 +188,8 @@ public final class WidgetUpdater {
                     R.layout.widget_prayer);
             views.setImageViewBitmap(R.id.wCanvas, card.bitmap);
             bindLiveDigits(context, themed, views, card.nowSeconds,
-                    card.countdownSeconds, snapshot, now, liveSeconds);
+                    card.countdownSeconds, snapshot, now, liveSeconds,
+                    px[2] / (float) px[0], px[3] / (float) px[1]);
             views.setContentDescription(R.id.wCanvas,
                     WidgetRenderer.describe(snapshot, use24));
             views.setOnClickPendingIntent(R.id.wRoot, openApp(context, 10));
@@ -216,7 +217,8 @@ public final class WidgetUpdater {
                     R.layout.widget_prayer_small);
             views.setImageViewBitmap(R.id.wCanvas, card.bitmap);
             bindLiveDigits(context, themed, views, card.nowSeconds,
-                    card.countdownSeconds, snapshot, now, liveSeconds);
+                    card.countdownSeconds, snapshot, now, liveSeconds,
+                    px[2] / (float) px[0], px[3] / (float) px[1]);
             views.setContentDescription(R.id.wCanvas,
                     WidgetRenderer.describe(snapshot, use24));
             views.setOnClickPendingIntent(R.id.wRoot, openApp(context, 12));
@@ -236,7 +238,7 @@ public final class WidgetUpdater {
                                        WidgetRenderer.Live nowField,
                                        WidgetRenderer.Live countdownField,
                                        PrayerClock.Snapshot snapshot, Instant now,
-                                       boolean live) {
+                                       boolean live, float scaleX, float scaleY) {
         if (!live || nowField == null || countdownField == null) {
             for (int id : LIVE_FLIPPERS) {
                 views.setViewVisibility(id, View.GONE);
@@ -256,8 +258,8 @@ public final class WidgetUpdater {
         int countdownSecond = (int) (remainingSeconds % 60L);
         views.setDisplayedChild(R.id.wCountdownSeconds, 59 - countdownSecond);
 
-        place(views, R.id.wNowSeconds, nowField);
-        place(views, R.id.wCountdownSeconds, countdownField);
+        place(views, R.id.wNowSeconds, nowField, scaleX, scaleY);
+        place(views, R.id.wCountdownSeconds, countdownField, scaleX, scaleY);
 
         for (int id : LIVE_FLIPPERS) {
             views.setViewVisibility(id, View.VISIBLE);
@@ -271,13 +273,21 @@ public final class WidgetUpdater {
         }
     }
 
-    private static void place(RemoteViews views, int id, WidgetRenderer.Live field) {
-        views.setViewLayoutMargin(id, RemoteViews.MARGIN_LEFT, field.left,
+    /**
+     * Places a live field. The renderer works in bitmap pixels; when the
+     * widget bitmap was capped for memory, the host stretches it back to the
+     * real widget size, so both the position and the cell size must scale too.
+     */
+    private static void place(RemoteViews views, int id, WidgetRenderer.Live field,
+                              float scaleX, float scaleY) {
+        views.setViewLayoutMargin(id, RemoteViews.MARGIN_LEFT,
+                Math.round(field.left * scaleX), TypedValue.COMPLEX_UNIT_PX);
+        views.setViewLayoutMargin(id, RemoteViews.MARGIN_TOP,
+                Math.round(field.top * scaleY), TypedValue.COMPLEX_UNIT_PX);
+        views.setViewLayoutWidth(id, Math.round(field.width * scaleX),
                 TypedValue.COMPLEX_UNIT_PX);
-        views.setViewLayoutMargin(id, RemoteViews.MARGIN_TOP, field.top,
+        views.setViewLayoutHeight(id, Math.round(field.height * scaleY),
                 TypedValue.COMPLEX_UNIT_PX);
-        views.setViewLayoutWidth(id, field.width, TypedValue.COMPLEX_UNIT_PX);
-        views.setViewLayoutHeight(id, field.height, TypedValue.COMPLEX_UNIT_PX);
     }
 
     /**
@@ -308,7 +318,10 @@ public final class WidgetUpdater {
         // One bitmap has to fit through the widget pipe; cap the longest edge
         // while keeping the aspect ratio the launcher gave us.
         float scale = Math.min(1f, 1600f / Math.max(w, h));
-        return new int[]{Math.max(1, Math.round(w * scale)), Math.max(1, Math.round(h * scale))};
+        int actualW = Math.max(1, Math.round(w));
+        int actualH = Math.max(1, Math.round(h));
+        return new int[]{Math.max(1, Math.round(w * scale)),
+                Math.max(1, Math.round(h * scale)), actualW, actualH};
     }
 
     private static PendingIntent openApp(Context context, int requestCode) {

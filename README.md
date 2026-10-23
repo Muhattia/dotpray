@@ -20,7 +20,7 @@ No ads, no tracking, no AndroidX. The app has no `INTERNET` permission.
 (`tools/render_preview.py`), not screenshots. The app and both widgets share
 the in-app System / Light / Dark choice.*
 
-*Version 1.4 — dotted live seconds and Umm al-Qura dates.*
+*Version 1.5 — dotted live seconds and Umm al-Qura dates.*
 
 ---
 
@@ -29,7 +29,7 @@ the in-app System / Light / Dark choice.*
 | | |
 |---|---|
 | **Live prayer clock** | Next prayer, its time, and a ticking `HH:MM:SS` countdown |
-| **Two widgets** | Wide `4×2` and compact `2×2`; a live wall clock with seconds, a live `HH:MM:SS` countdown, and the Hijri date |
+| **Two widgets** | Wide `4×2` and compact `2×2`; a live wall clock with seconds and a live `HH:MM:SS` countdown (Android 12+), plus the Hijri date |
 | **Fixed method** | Egyptian General Authority of Survey — Fajr 19.5° / Isha 17.5° |
 | **Asr schools** | Standard (Shafi'i/Maliki/Hanbali) or Hanafi (shadow factor 2) |
 | **Current location** | GPS fix, rechecked every 15 minutes while the app is open, named by the system geocoder with a nearest-city fallback |
@@ -59,7 +59,7 @@ build it locally with `./build.sh`:
 
 ```bash
 ./build.sh
-adb install -r dist/dotpray-1.4.apk
+adb install -r dist/dotpray-1.5.apk
 ```
 
 Or copy the built APK to the phone and open it (you will need to allow
@@ -114,7 +114,7 @@ Requirements:
 | Build tools | `37.0.0` |
 | minSdk / targetSdk | 26 / 35 |
 
-Output: `dist/dotpray-1.4.apk`, signed with a debug key that is generated on
+Output: `dist/dotpray-1.5.apk`, signed with a debug key that is generated on
 first run at `keystore/dotpray.keystore` (outside `build/`, so rebuilds keep the
 same certificate and new versions install over old ones).
 
@@ -204,7 +204,7 @@ dotpray/
 │   ├── gen_live_digits.py       traces Doto digits into widget vector drawables
 │   ├── make_icons.py            regenerates launcher icons from the SVG
 │   └── render_preview.py        renders preview/*.png from the real layouts
-└── dist/dotpray-1.4.apk
+└── dist/dotpray-1.5.apk
 ```
 
 ### Design details
@@ -242,6 +242,11 @@ dotpray/
 
 The app targets `minSdk 26` (Android 8.0) and has been verified to compile and
 link against a real API 26 `android.jar`.
+
+Live seconds rely on `RemoteViews` layout placement APIs added in Android 12.
+On Android 8-11 the same Doto card falls back to an `HH:MM` wall clock and a
+minute-resolution countdown; on Android 12+ both fields tick every second
+inside the launcher.
 
 Two things that Android 8.0 does *not* have, and how they are handled:
 
