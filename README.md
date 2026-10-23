@@ -20,7 +20,7 @@ No ads, no tracking, no AndroidX. The app has no `INTERNET` permission.
 (`tools/render_preview.py`), not screenshots. The app and both widgets share
 the in-app System / Light / Dark choice.*
 
-*Version 1.5 — dotted live seconds and Umm al-Qura dates.*
+*Version 1.6 — dotted live seconds and Umm al-Qura dates.*
 
 ---
 
@@ -59,7 +59,7 @@ build it locally with `./build.sh`:
 
 ```bash
 ./build.sh
-adb install -r dist/dotpray-1.5.apk
+adb install -r dist/dotpray-1.6.apk
 ```
 
 Or copy the built APK to the phone and open it (you will need to allow
@@ -114,7 +114,7 @@ Requirements:
 | Build tools | `37.0.0` |
 | minSdk / targetSdk | 26 / 35 |
 
-Output: `dist/dotpray-1.5.apk`, signed with a debug key that is generated on
+Output: `dist/dotpray-1.6.apk`, signed with a debug key that is generated on
 first run at `keystore/dotpray.keystore` (outside `build/`, so rebuilds keep the
 same certificate and new versions install over old ones).
 
@@ -204,7 +204,7 @@ dotpray/
 │   ├── gen_live_digits.py       traces Doto digits into widget vector drawables
 │   ├── make_icons.py            regenerates launcher icons from the SVG
 │   └── render_preview.py        renders preview/*.png from the real layouts
-└── dist/dotpray-1.5.apk
+└── dist/dotpray-1.6.apk
 ```
 
 ### Design details

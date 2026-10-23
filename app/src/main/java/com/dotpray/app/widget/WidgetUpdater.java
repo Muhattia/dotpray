@@ -250,12 +250,17 @@ public final class WidgetUpdater {
         tint(views, NOW_SECONDS_IDS, fg);
         tint(views, COUNTDOWN_SECONDS_IDS, fg);
 
+        // Round to the nearest second rather than truncating. The flipper's
+        // timer starts when the host attaches it, so seeding the nearest value
+        // keeps the first second within half a tick of wall time.
+        int millis = (int) (now.toEpochMilli() % 1000L);
         int second = now.atZone(ZoneId.systemDefault()).getSecond();
+        if (millis >= 500) second = (second + 1) % 60;
         views.setDisplayedChild(R.id.wNowSeconds, second);
 
-        long remainingSeconds = Math.max(0L, snapshot.next.instant.toEpochMilli()
-                - now.toEpochMilli()) / 1000L;
-        int countdownSecond = (int) (remainingSeconds % 60L);
+        long remainingMillis = Math.max(0L, snapshot.next.instant.toEpochMilli()
+                - now.toEpochMilli());
+        int countdownSecond = (int) (((remainingMillis + 500L) / 1000L) % 60L);
         views.setDisplayedChild(R.id.wCountdownSeconds, 59 - countdownSecond);
 
         place(views, R.id.wNowSeconds, nowField, scaleX, scaleY);
