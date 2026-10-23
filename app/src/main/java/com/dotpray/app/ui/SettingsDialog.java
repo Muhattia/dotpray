@@ -57,7 +57,7 @@ public class SettingsDialog {
     }
 
     public void show() {
-        dialog = new Dialog(activity);
+        dialog = new Dialog(activity, R.style.Theme_Dotpray_Dialog);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         View content = LayoutInflater.from(activity).inflate(R.layout.dialog_settings, null, false);
@@ -113,18 +113,24 @@ public class SettingsDialog {
 
         refreshValues();
 
-        dialog.setOnShowListener(d -> {
-            Window window = dialog.getWindow();
-            if (window == null) return;
+        // Configure the window before it is attached. Doing this from
+        // onShow() made the sheet appear at the default dialog size for one
+        // frame, then jump to its final width/height and dim.
+        Window window = dialog.getWindow();
+        if (window != null) {
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
             WindowManager.LayoutParams params = window.getAttributes();
+            int width = Math.min(ListPickerDialog.screenWidth(activity)
+                    - ListPickerDialog.dp(activity, 28), ListPickerDialog.dp(activity, 560));
+            int height = Math.min((int) (ListPickerDialog.screenHeight(activity) * 0.88f),
+                    ListPickerDialog.dp(activity, 820));
+            params.width = width;
+            params.height = height;
+            params.gravity = Gravity.CENTER;
             params.dimAmount = 0.75f;
             window.setAttributes(params);
-            window.setGravity(Gravity.CENTER);
-            window.setLayout(ListPickerDialog.screenWidth(activity) - ListPickerDialog.dp(activity, 28),
-                    (int) (ListPickerDialog.screenHeight(activity) * 0.88f));
-        });
+        }
         dialog.show();
     }
 

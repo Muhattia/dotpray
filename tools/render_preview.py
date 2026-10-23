@@ -287,7 +287,7 @@ def render_app(path=None):
     spaced(dr, (W // 2, y), "Calculated on device · No ads · No tracking",
            f_label_faint, FG_FAINT, 0.14, anchor="ma")
     y += d(20)
-    spaced(dr, (W // 2, y), "DOTPRAY 1.11 · DOTO (OFL)",
+    spaced(dr, (W // 2, y), "DOTPRAY 1.12 · DOTO (OFL)",
            f_label_faint, FOOTER, 0.14, anchor="ma")
 
     path = path or os.path.join(OUT_DIR, "app-screen.png")

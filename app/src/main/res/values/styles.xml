@@ -18,6 +18,20 @@
         <item name="android:windowAnimationStyle">@android:style/Animation.Activity</item>
     </style>
 
+    <!-- A real floating dialog theme: the activity animation and opaque
+         window background are what made the settings sheet pop/reflow. -->
+    <style name="Theme.Dotpray.Dialog" parent="@android:style/Theme.Material.Light.Dialog.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.75</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+        <item name="android:colorAccent">@color/accent</item>
+        <item name="android:fontFamily">@font/doto_regular</item>
+    </style>
+
     <style name="Label">
         <item name="android:textSize">10sp</item>
         <item name="android:fontFamily">@font/doto_bold</item>
