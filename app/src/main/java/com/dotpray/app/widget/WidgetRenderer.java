@@ -18,6 +18,8 @@ import com.dotpray.app.prayer.PrayerCalculator;
 import com.dotpray.app.prayer.PrayerClock;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
@@ -27,23 +29,57 @@ import java.util.Locale;
  * <p>RemoteViews cannot carry a custom {@code Typeface}: the launcher inflates
  * the layout with its own resources, so {@code android:fontFamily="@font/..."}
  * silently falls back to the system face. Rendering the card artwork into a
- * bitmap keeps the static type in Doto. The wall clock and the prayer countdown
- * are the two exceptions: they are real {@code TextClock} / {@code Chronometer}
- * views in the widget layout so their seconds tick in the launcher even when
- * the app is not running. The Chronometer base is set from
- * {@code SystemClock.elapsedRealtime()}, not wall-clock milliseconds.
+ * bitmap keeps the static type in Doto. For the moving seconds, the layout uses
+ * the same Doto glyphs as white vector drawables inside a {@code ViewFlipper}.
+ * The launcher flips those tiny views itself, so the seconds stay live without
+ * a service or a per-second AlarmManager wake-up.
  */
 public final class WidgetRenderer {
 
     private static final int ACCENT = 0xFFD71921;
 
+    /** Doto's digits all use the same 600/1000 em advance. */
+    private static final float CELL_ADVANCE = 0.600f;
+    private static final float BOLD_GLYPH_TOP = 0.691f;
+    private static final float BOLD_GLYPH_HEIGHT = 0.682f;
+    private static final float REGULAR_GLYPH_TOP = 0.680f;
+    private static final float REGULAR_GLYPH_HEIGHT = 0.660f;
+
     private WidgetRenderer() {
     }
 
+    /** Pixel placement of one live two-digit seconds field. */
+    public static final class Live {
+        public final int left;
+        public final int top;
+        public final int width;
+        public final int height;
+
+        Live(int left, int top, int width, int height) {
+            this.left = left;
+            this.top = top;
+            this.width = width;
+            this.height = height;
+        }
+    }
+
+    /** A rendered card and the live fields whose pixels it left blank. */
+    public static final class Card {
+        public final Bitmap bitmap;
+        public final Live nowSeconds;
+        public final Live countdownSeconds;
+
+        Card(Bitmap bitmap, Live nowSeconds, Live countdownSeconds) {
+            this.bitmap = bitmap;
+            this.nowSeconds = nowSeconds;
+            this.countdownSeconds = countdownSeconds;
+        }
+    }
+
     /** Renders the wide 4x2 card. */
-    public static Bitmap wide(Context context, PrayerClock.Snapshot snapshot,
-                              boolean use24, int widthPx, int heightPx,
-                              boolean liveCountdown) {
+    public static Card wide(Context context, PrayerClock.Snapshot snapshot,
+                            boolean use24, Instant now, int widthPx, int heightPx,
+                            boolean liveSeconds) {
         Ink ink = new Ink(context, widthPx, heightPx);
         ink.card();
         ink.dotField();
@@ -55,9 +91,11 @@ public final class WidgetRenderer {
         float designW = ink.dp(326);
         float designH = ink.dp(150);
         float scale = Math.min(ink.W / designW, ink.H / designH);
+        float offsetX = (ink.W - designW * scale) / 2f;
+        float offsetY = (ink.H - designH * scale) / 2f;
         Canvas c = ink.canvas;
         c.save();
-        c.translate((ink.W - designW * scale) / 2f, (ink.H - designH * scale) / 2f);
+        c.translate(offsetX, offsetY);
         c.scale(scale, scale);
 
         float pad = ink.dp(16);
@@ -76,20 +114,21 @@ public final class WidgetRenderer {
                 ink.label(), ink.dim, 0.18f, Paint.Align.LEFT);
 
         String city = snapshot.place.name.toUpperCase(Locale.US);
-        // Leave the top-right clear for the native second-by-second clock.
+        // Leave the top-right clear for the live wall clock.
         float cityRight = designW - pad - ink.dp(96);
         float cityLeft = pad + ink.dp(100);
         ink.text(ink.fit(city, ink.label(), Math.max(ink.dp(20), cityRight - cityLeft), 0.14f),
                 cityRight, header, ink.label(), ink.faint, 0.14f, Paint.Align.RIGHT);
 
+        Live nowSeconds = currentClock(ink, now, use24, designW - pad, header, 11f,
+                liveSeconds, scale, offsetX, offsetY);
+
         ink.text(snapshot.next.prayer.label.toUpperCase(Locale.US), pad, nameBase,
                 ink.display(22), ink.fg, 0.04f, Paint.Align.LEFT);
         ink.text(ink.fit(meta(snapshot), ink.label(9.5f), designW - pad * 2, 0.04f),
                 pad, metaBase, ink.label(9.5f), ink.faint, 0.04f, Paint.Align.LEFT);
-        if (!liveCountdown) {
-            ink.text(countdown(snapshot), pad, countBase, ink.value(13), ink.fg, 0.06f,
-                    Paint.Align.LEFT);
-        }
+        Live countdownSeconds = countdownLine(ink, snapshot, now, pad, countBase, 13f,
+                liveSeconds, scale, offsetX, offsetY);
 
         float clockSize = 46;
         String period = use24 ? "" : Format.meridiem(snapshot.next.local);
@@ -106,7 +145,7 @@ public final class WidgetRenderer {
         ink.text(time, timeRight, clockBase, ink.display(clockSize), ink.fg, -0.01f,
                 Paint.Align.RIGHT);
 
-        ink.progress(snapshot, pad, divider, designW - pad);
+        ink.progress(snapshot, now.toEpochMilli(), pad, divider, designW - pad);
 
         Prayer[] prayers = Prayer.values();
         float col = (designW - pad * 2) / 5f;
@@ -126,13 +165,13 @@ public final class WidgetRenderer {
         }
 
         c.restore();
-        return ink.bitmap;
+        return new Card(ink.bitmap, nowSeconds, countdownSeconds);
     }
 
     /** Renders the compact 2x2 card. */
-    public static Bitmap small(Context context, PrayerClock.Snapshot snapshot,
-                               boolean use24, int widthPx, int heightPx,
-                               boolean liveCountdown) {
+    public static Card small(Context context, PrayerClock.Snapshot snapshot,
+                             boolean use24, Instant now, int widthPx, int heightPx,
+                             boolean liveSeconds) {
         Ink ink = new Ink(context, widthPx, heightPx);
         ink.card();
         ink.dotField();
@@ -140,9 +179,11 @@ public final class WidgetRenderer {
         float designW = ink.dp(150);
         float designH = ink.dp(150);
         float scale = Math.min(ink.W / designW, ink.H / designH);
+        float offsetX = (ink.W - designW * scale) / 2f;
+        float offsetY = (ink.H - designH * scale) / 2f;
         Canvas c = ink.canvas;
         c.save();
-        c.translate((ink.W - designW * scale) / 2f, (ink.H - designH * scale) / 2f);
+        c.translate(offsetX, offsetY);
         c.scale(scale, scale);
 
         float pad = ink.dp(14);
@@ -155,6 +196,9 @@ public final class WidgetRenderer {
         c.drawCircle(pad + ink.dp(3), ink.dp(19), ink.dp(2.5f), ink.fill(ACCENT));
         ink.text("NEXT", pad + ink.dp(10), header, ink.label(), ink.dim, 0.18f,
                 Paint.Align.LEFT);
+
+        Live nowSeconds = currentClock(ink, now, use24, designW - ink.dp(11), header, 9f,
+                liveSeconds, scale, offsetX, offsetY);
 
         ink.text(snapshot.next.prayer.label.toUpperCase(Locale.US), pad, nameBase,
                 ink.display(19), ink.fg, 0.04f, Paint.Align.LEFT);
@@ -169,15 +213,93 @@ public final class WidgetRenderer {
                     clockBase - ink.dp(6), ink.label(), ink.faint, 0.14f, Paint.Align.LEFT);
         }
 
-        if (!liveCountdown) {
-            ink.text(countdown(snapshot), pad, countBase, ink.value(11), ink.fg, 0.05f,
-                    Paint.Align.LEFT);
-        }
+        Live countdownSeconds = countdownLine(ink, snapshot, now, pad, countBase, 11f,
+                liveSeconds, scale, offsetX, offsetY);
         ink.text(ink.fit(smallMeta(snapshot), ink.label(8.5f), designW - pad * 2, 0.08f),
                 pad, metaBase, ink.label(8.5f), ink.faint, 0.08f, Paint.Align.LEFT);
 
         c.restore();
-        return ink.bitmap;
+        return new Card(ink.bitmap, nowSeconds, countdownSeconds);
+    }
+
+    /**
+     * Draws the static half of the wall clock. With live seconds the bitmap
+     * ends at the colon and the glyph-pair flipper covers both digits; without
+     * them the complete HH:MM:SS text stays in the bitmap for older releases.
+     */
+    private static Live currentClock(Ink ink, Instant now, boolean use24, float right,
+                                     float baseline, float sizeSp, boolean live,
+                                     float scale, float offsetX, float offsetY) {
+        ZonedDateTime local = now.atZone(ZoneId.systemDefault());
+        Paint paint = ink.display(sizeSp);
+        String prefix = (use24 ? Format.time24(local) : Format.time12(local)) + ":";
+        String suffix = use24 ? "" : " " + Format.meridiem(local);
+        float cell = ink.dp(CELL_ADVANCE * sizeSp);
+        float suffixWidth = suffix.isEmpty() ? 0f : paint.measureText(suffix);
+        float secondsLeft = right - suffixWidth - cell * 2f;
+
+        if (!live) {
+            String seconds = String.format(Locale.US, "%02d", local.getSecond());
+            ink.text(prefix + seconds + suffix, right, baseline, paint, ink.fg, 0f,
+                    Paint.Align.RIGHT);
+            return null;
+        }
+
+        ink.text(prefix, secondsLeft, baseline, paint, ink.fg, 0f, Paint.Align.RIGHT);
+        ink.text(suffix, right, baseline, paint, ink.fg, 0f, Paint.Align.RIGHT);
+        return live(ink, secondsLeft, baseline, sizeSp, true, scale, offsetX, offsetY);
+    }
+
+    /**
+     * Draws the countdown line up to its final colon, leaving pixels for the
+     * live seconds. Before Android 12 the original minute-resolution line is
+     * used instead, because the layout cannot be positioned reliably there.
+     */
+    private static Live countdownLine(Ink ink, PrayerClock.Snapshot snapshot, Instant now,
+                                      float left, float baseline, float sizeSp,
+                                      boolean live, float scale, float offsetX,
+                                      float offsetY) {
+        long remaining = Math.max(0L, snapshot.next.instant.toEpochMilli()
+                - now.toEpochMilli());
+        Paint paint = ink.value(sizeSp);
+        if (!live) {
+            ink.text(countdown(snapshot, now.toEpochMilli()), left, baseline, paint,
+                    ink.fg, 0.06f, Paint.Align.LEFT);
+            return null;
+        }
+
+        String prefix = countdownPrefix(remaining);
+        ink.text(prefix, left, baseline, paint, ink.fg, 0f, Paint.Align.LEFT);
+        float secondsLeft = left + paint.measureText(prefix);
+        return live(ink, secondsLeft, baseline, sizeSp, false, scale, offsetX, offsetY);
+    }
+
+    /**
+     * Shared geometry for a two-digit live field. The vector drawables have
+     * exactly the same advance and glyph height as the static Doto text, so
+     * the overlay stitches onto the bitmap without a visible seam.
+     */
+    private static Live live(Ink ink, float left, float baseline, float sizeSp,
+                             boolean bold, float scale, float offsetX, float offsetY) {
+        // A pair vector is two adjacent 600-unit advances, so its logical
+        // width is 1.2 em. The path viewports are 1200 x glyph height.
+        float pairWidth = ink.dp(CELL_ADVANCE * 2f * sizeSp);
+        float glyphTop = (bold ? BOLD_GLYPH_TOP : REGULAR_GLYPH_TOP) * sizeSp;
+        float glyphHeight = (bold ? BOLD_GLYPH_HEIGHT : REGULAR_GLYPH_HEIGHT) * sizeSp;
+        int leftPx = Math.round(offsetX + left * scale);
+        int topPx = Math.round(offsetY + (baseline - ink.dp(glyphTop)) * scale);
+        int widthPx = Math.max(1, Math.round(pairWidth * scale));
+        int heightPx = Math.max(1, Math.round(ink.dp(glyphHeight) * scale));
+        return new Live(leftPx, topPx, widthPx, heightPx);
+    }
+
+    private static String countdownPrefix(long remainingMs) {
+        long total = Math.max(0L, remainingMs) / 1000L;
+        long hours = total / 3600L;
+        long minutes = (total % 3600L) / 60L;
+        return hours > 0
+                ? String.format(Locale.US, "IN %d:%02d:", hours, minutes)
+                : String.format(Locale.US, "IN %d:", minutes);
     }
 
     /** Short line used as the widget's accessibility description. */
@@ -189,8 +311,11 @@ public final class WidgetRenderer {
 
     /** Minute-accurate fallback used for accessibility and pre-Android 12. */
     static String countdown(PrayerClock.Snapshot snapshot) {
-        long ms = Math.max(0L, snapshot.next.instant.toEpochMilli()
-                - Instant.now().toEpochMilli());
+        return countdown(snapshot, Instant.now().toEpochMilli());
+    }
+
+    private static String countdown(PrayerClock.Snapshot snapshot, long nowMs) {
+        long ms = Math.max(0L, snapshot.next.instant.toEpochMilli() - nowMs);
         long minutes = ms / 60000L;
         if (minutes >= 60) {
             return "IN " + (minutes / 60) + "H " + (minutes % 60) + "M";
@@ -382,15 +507,15 @@ public final class WidgetRenderer {
                     + tracking * paint.getTextSize() * Math.max(0, s.length() - 1);
         }
 
-        void progress(PrayerClock.Snapshot snapshot, float left, float y, float right) {
+        void progress(PrayerClock.Snapshot snapshot, long nowMs, float left, float y,
+                      float right) {
             Paint track = fill(hairline);
             canvas.drawRect(left, y, right, y + Math.max(1f, dp(1)), track);
 
             long from = snapshot.previous.instant.toEpochMilli();
             long to = snapshot.next.instant.toEpochMilli();
-            long now = Instant.now().toEpochMilli();
             float fraction = to <= from ? 0f
-                    : Math.max(0f, Math.min(1f, (now - from) / (float) (to - from)));
+                    : Math.max(0f, Math.min(1f, (nowMs - from) / (float) (to - from)));
             Paint done = fill(ACCENT);
             canvas.drawRect(left, y, left + (right - left) * fraction,
                     y + Math.max(2f, dp(2)), done);

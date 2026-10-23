@@ -11,7 +11,7 @@ import android.os.Build;
  *
  * <p>The card artwork is a bitmap (RemoteViews has no custom-font support), so
  * the static parts still need a redraw when the minute, day, theme or location
- * changes. The live wall clock and countdown are native remote views and tick
+ * changes. The live seconds are `ViewFlipper` glyphs in the launcher and tick
  * independently. A non-wakeup {@code RTC} alarm is used rather than
  * {@code RTC_WAKEUP}: it fires while the device is awake, and is deferred when
  * it is not, which is exactly when nobody can see the widget. Nothing wakes the

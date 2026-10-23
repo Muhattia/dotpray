@@ -182,8 +182,8 @@ def render_app(path=None):
                fill=ACCENT)
     spaced(dr, (L + d(26), y + d(9)), "CAIRO", font(MONO_B, 10), FG, 0.18)
 
-    spaced(dr, (R, y + d(3)), "THU / 22 OCT 2026", f_label, FG_DIM, 0.18, anchor="ra")
-    spaced(dr, (R, y + d(18)), "10 JUMADA I 1448", f_label_faint, FG_FAINT, 0.14, anchor="ra")
+    spaced(dr, (R, y + d(3)), "FRI / 23 OCT 2026", f_label, FG_DIM, 0.18, anchor="ra")
+    spaced(dr, (R, y + d(18)), "12 JUMADA I 1448", f_label_faint, FG_FAINT, 0.14, anchor="ra")
 
     y += pill_h + d(18)
 
@@ -372,12 +372,12 @@ def render_widget_wide(width_dp=326, height_dp=150, path=None, drawable=None):
     cd.ellipse([pad, d(16), pad + d(6), d(22)], fill=ACCENT)
     _spaced_px(cd, (pad + d(13), header), "NEXT PRAYER", f_10b, d(10), FG_DIM, 0.18)
     _spaced_px(cd, (DW - pad - d(96), header), "CAIRO", f_10b, d(10), FG_FAINT, 0.14, "right")
-    _spaced_px(cd, (DW - pad, header), "21:42:05", f_11b, d(11), FG, 0.04, "right")
+    _spaced_px(cd, (DW - pad, header), "21:42:05", f_11b, d(11), FG, 0.0, "right")
 
     cd.text((pad, name_base), "MAGHRIB", font=f_22, fill=FG, anchor="ls")
-    _spaced_px(cd, (pad, meta_base), "THU 22 OCT · 10 JUM I 1448 · TODAY",
+    _spaced_px(cd, (pad, meta_base), "FRI 23 OCT · 12 JUM I 1448 · TODAY",
                f_9b, d(9), FG_FAINT, 0.04)
-    _spaced_px(cd, (pad, count_base), "IN 1:25:12", f_13, d(13), FG, 0.06)
+    _spaced_px(cd, (pad, count_base), "IN 1:25:12", f_13, d(13), FG, 0.0)
     cd.text((DW - pad, clock_base), "18:17", font=f_46, fill=FG, anchor="rs")
 
     # progress hairline
@@ -433,12 +433,12 @@ def render_widget_small(width_dp=150, height_dp=150, path=None, drawable=None):
 
     cd.ellipse([pad, d(16.5), pad + d(5), d(21.5)], fill=ACCENT)
     _spaced_px(cd, (pad + d(10), header), "NEXT", f_10b, d(10), FG_DIM, 0.18)
-    _spaced_px(cd, (DW - d(11), header), "21:42:05", f_9b, d(9), FG, 0.03, "right")
+    _spaced_px(cd, (DW - d(11), header), "21:42:05", f_9b, d(9), FG, 0.0, "right")
 
     cd.text((pad, name_base), "MAGHRIB", font=f_19, fill=FG, anchor="ls")
     cd.text((pad, clock_base), "18:17", font=f_36, fill=FG, anchor="ls")
-    _spaced_px(cd, (pad, count_base), "IN 1:25:12", f_11, d(11), FG, 0.05)
-    _spaced_px(cd, (pad, meta_base), "CAIRO · 10 JUM I 1448", f_9b, d(9), FG_FAINT, 0.08)
+    _spaced_px(cd, (pad, count_base), "IN 1:25:12", f_11, d(11), FG, 0.0)
+    _spaced_px(cd, (pad, meta_base), "CAIRO · 12 JUM I 1448", f_9b, d(9), FG_FAINT, 0.08)
 
     _compose(img, layer, DW, DH)
 

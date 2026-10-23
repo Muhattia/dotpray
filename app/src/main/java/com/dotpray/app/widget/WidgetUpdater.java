@@ -5,10 +5,8 @@ import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -21,8 +19,142 @@ import com.dotpray.app.data.ThemeController;
 import com.dotpray.app.prayer.CalcMethod;
 import com.dotpray.app.prayer.PrayerClock;
 
+import java.time.Instant;
+import java.time.ZoneId;
+
 /** Pushes the current prayer state into every placed widget. */
 public final class WidgetUpdater {
+
+    // One 60-child ViewFlipper per seconds field: 00..59. Keeping both digits
+    // in the same flipper avoids a separate tens timer drifting out of phase
+    // with the wall clock.
+    private static final int[] NOW_SECONDS_IDS = {
+            R.id.wNowSec0,
+            R.id.wNowSec1,
+            R.id.wNowSec2,
+            R.id.wNowSec3,
+            R.id.wNowSec4,
+            R.id.wNowSec5,
+            R.id.wNowSec6,
+            R.id.wNowSec7,
+            R.id.wNowSec8,
+            R.id.wNowSec9,
+            R.id.wNowSec10,
+            R.id.wNowSec11,
+            R.id.wNowSec12,
+            R.id.wNowSec13,
+            R.id.wNowSec14,
+            R.id.wNowSec15,
+            R.id.wNowSec16,
+            R.id.wNowSec17,
+            R.id.wNowSec18,
+            R.id.wNowSec19,
+            R.id.wNowSec20,
+            R.id.wNowSec21,
+            R.id.wNowSec22,
+            R.id.wNowSec23,
+            R.id.wNowSec24,
+            R.id.wNowSec25,
+            R.id.wNowSec26,
+            R.id.wNowSec27,
+            R.id.wNowSec28,
+            R.id.wNowSec29,
+            R.id.wNowSec30,
+            R.id.wNowSec31,
+            R.id.wNowSec32,
+            R.id.wNowSec33,
+            R.id.wNowSec34,
+            R.id.wNowSec35,
+            R.id.wNowSec36,
+            R.id.wNowSec37,
+            R.id.wNowSec38,
+            R.id.wNowSec39,
+            R.id.wNowSec40,
+            R.id.wNowSec41,
+            R.id.wNowSec42,
+            R.id.wNowSec43,
+            R.id.wNowSec44,
+            R.id.wNowSec45,
+            R.id.wNowSec46,
+            R.id.wNowSec47,
+            R.id.wNowSec48,
+            R.id.wNowSec49,
+            R.id.wNowSec50,
+            R.id.wNowSec51,
+            R.id.wNowSec52,
+            R.id.wNowSec53,
+            R.id.wNowSec54,
+            R.id.wNowSec55,
+            R.id.wNowSec56,
+            R.id.wNowSec57,
+            R.id.wNowSec58,
+            R.id.wNowSec59
+    };
+    private static final int[] COUNTDOWN_SECONDS_IDS = {
+            R.id.wCountdownSec0,
+            R.id.wCountdownSec1,
+            R.id.wCountdownSec2,
+            R.id.wCountdownSec3,
+            R.id.wCountdownSec4,
+            R.id.wCountdownSec5,
+            R.id.wCountdownSec6,
+            R.id.wCountdownSec7,
+            R.id.wCountdownSec8,
+            R.id.wCountdownSec9,
+            R.id.wCountdownSec10,
+            R.id.wCountdownSec11,
+            R.id.wCountdownSec12,
+            R.id.wCountdownSec13,
+            R.id.wCountdownSec14,
+            R.id.wCountdownSec15,
+            R.id.wCountdownSec16,
+            R.id.wCountdownSec17,
+            R.id.wCountdownSec18,
+            R.id.wCountdownSec19,
+            R.id.wCountdownSec20,
+            R.id.wCountdownSec21,
+            R.id.wCountdownSec22,
+            R.id.wCountdownSec23,
+            R.id.wCountdownSec24,
+            R.id.wCountdownSec25,
+            R.id.wCountdownSec26,
+            R.id.wCountdownSec27,
+            R.id.wCountdownSec28,
+            R.id.wCountdownSec29,
+            R.id.wCountdownSec30,
+            R.id.wCountdownSec31,
+            R.id.wCountdownSec32,
+            R.id.wCountdownSec33,
+            R.id.wCountdownSec34,
+            R.id.wCountdownSec35,
+            R.id.wCountdownSec36,
+            R.id.wCountdownSec37,
+            R.id.wCountdownSec38,
+            R.id.wCountdownSec39,
+            R.id.wCountdownSec40,
+            R.id.wCountdownSec41,
+            R.id.wCountdownSec42,
+            R.id.wCountdownSec43,
+            R.id.wCountdownSec44,
+            R.id.wCountdownSec45,
+            R.id.wCountdownSec46,
+            R.id.wCountdownSec47,
+            R.id.wCountdownSec48,
+            R.id.wCountdownSec49,
+            R.id.wCountdownSec50,
+            R.id.wCountdownSec51,
+            R.id.wCountdownSec52,
+            R.id.wCountdownSec53,
+            R.id.wCountdownSec54,
+            R.id.wCountdownSec55,
+            R.id.wCountdownSec56,
+            R.id.wCountdownSec57,
+            R.id.wCountdownSec58,
+            R.id.wCountdownSec59
+    };
+    private static final int[] LIVE_FLIPPERS = {
+            R.id.wNowSeconds, R.id.wCountdownSeconds
+    };
 
     private WidgetUpdater() {
     }
@@ -40,24 +172,23 @@ public final class WidgetUpdater {
         if (ids == null || ids.length == 0) return;
         PrayerPrefs prefs = new PrayerPrefs(context);
         Place place = prefs.getPlace();
+        Instant now = Instant.now();
         PrayerClock.Snapshot snapshot = PrayerClock.snapshot(
-                java.time.Instant.now(), place, CalcMethod.EGYPT, prefs.getAsr());
+                now, place, CalcMethod.EGYPT, prefs.getAsr());
         boolean use24 = prefs.is24Hour();
         Context themed = ThemeController.wrap(context);
-        boolean liveCountdown = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+        boolean liveSeconds = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
 
         for (int id : ids) {
             int[] px = pixels(context, manager, id);
-            Bitmap card = WidgetRenderer.wide(themed, snapshot, use24, px[0], px[1],
-                    liveCountdown);
+            WidgetRenderer.Card card = WidgetRenderer.wide(themed, snapshot, use24, now,
+                    px[0], px[1], liveSeconds);
 
             RemoteViews views = new RemoteViews(context.getPackageName(),
                     R.layout.widget_prayer);
-            views.setImageViewBitmap(R.id.wCanvas, card);
-            bindCurrentClock(context, themed, views, use24, px,
-                    326f, 150f, 11f, 16f, 23f);
-            bindCountdown(context, themed, views, snapshot, px, liveCountdown,
-                    R.id.wCountdown, 326f, 150f, 16f, 100f, 13f);
+            views.setImageViewBitmap(R.id.wCanvas, card.bitmap);
+            bindLiveDigits(context, themed, views, card.nowSeconds,
+                    card.countdownSeconds, snapshot, now, liveSeconds);
             views.setContentDescription(R.id.wCanvas,
                     WidgetRenderer.describe(snapshot, use24));
             views.setOnClickPendingIntent(R.id.wRoot, openApp(context, 10));
@@ -69,24 +200,23 @@ public final class WidgetUpdater {
         if (ids == null || ids.length == 0) return;
         PrayerPrefs prefs = new PrayerPrefs(context);
         Place place = prefs.getPlace();
+        Instant now = Instant.now();
         PrayerClock.Snapshot snapshot = PrayerClock.snapshot(
-                java.time.Instant.now(), place, CalcMethod.EGYPT, prefs.getAsr());
+                now, place, CalcMethod.EGYPT, prefs.getAsr());
         boolean use24 = prefs.is24Hour();
         Context themed = ThemeController.wrap(context);
-        boolean liveCountdown = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+        boolean liveSeconds = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
 
         for (int id : ids) {
             int[] px = pixels(context, manager, id);
-            Bitmap card = WidgetRenderer.small(themed, snapshot, use24, px[0], px[1],
-                    liveCountdown);
+            WidgetRenderer.Card card = WidgetRenderer.small(themed, snapshot, use24, now,
+                    px[0], px[1], liveSeconds);
 
             RemoteViews views = new RemoteViews(context.getPackageName(),
                     R.layout.widget_prayer_small);
-            views.setImageViewBitmap(R.id.wCanvas, card);
-            bindCurrentClock(context, themed, views, use24, px,
-                    150f, 150f, 9f, 11f, 23f);
-            bindCountdown(context, themed, views, snapshot, px, liveCountdown,
-                    R.id.wCountdown, 150f, 150f, 14f, 118f, 11f);
+            views.setImageViewBitmap(R.id.wCanvas, card.bitmap);
+            bindLiveDigits(context, themed, views, card.nowSeconds,
+                    card.countdownSeconds, snapshot, now, liveSeconds);
             views.setContentDescription(R.id.wCanvas,
                     WidgetRenderer.describe(snapshot, use24));
             views.setOnClickPendingIntent(R.id.wRoot, openApp(context, 12));
@@ -95,84 +225,59 @@ public final class WidgetUpdater {
     }
 
     /**
-     * Shows exactly one of the two TextClock views. Keeping one view per format
-     * means the widget follows the app's own 12/24-hour setting instead of the
-     * phone's system setting, and the clock keeps ticking in the launcher even
-     * after the app process is gone.
+     * Seeds and places the two live seconds flippers. The flippers advance in
+     * launcher time, so this only sets the current child and positions the
+     * fields over the blank pixels the renderer reserved in the bitmap.
+     *
+     * <p>The countdown layout is in reverse value order (59, 58, ... 00), so a
+     * normal forward flip is a decrement and wraps from 00 back to 59.
      */
-    private static void bindCurrentClock(Context context, Context themed, RemoteViews views,
-                                         boolean use24, int[] px, float designWDp,
-                                         float designHDp, float textSizeSp, float rightPadDp,
-                                         float headerBaseDp) {
-        views.setViewVisibility(R.id.wNow24, use24 ? View.VISIBLE : View.GONE);
-        views.setViewVisibility(R.id.wNow12, use24 ? View.GONE : View.VISIBLE);
-        int fg = themed.getColor(R.color.fg);
-        views.setTextColor(R.id.wNow24, fg);
-        views.setTextColor(R.id.wNow12, fg);
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return;
-
-        float density = context.getResources().getDisplayMetrics().density;
-        float designW = designWDp * density;
-        float designH = designHDp * density;
-        float scale = Math.min(px[0] / designW, px[1] / designH);
-        float sizePx = Math.max(1f, textSizeSp * density * scale);
-        views.setTextViewTextSize(R.id.wNow24, TypedValue.COMPLEX_UNIT_PX, sizePx);
-        views.setTextViewTextSize(R.id.wNow12, TypedValue.COMPLEX_UNIT_PX, sizePx);
-
-        float offsetX = (px[0] - designW * scale) / 2f;
-        float offsetY = (px[1] - designH * scale) / 2f;
-        int top = Math.round(offsetY + headerBaseDp * density * scale - sizePx * 0.82f);
-        int right = Math.round(px[0] - offsetX
-                - (designW - rightPadDp * density) * scale);
-        for (int id : new int[]{R.id.wNow24, R.id.wNow12}) {
-            views.setViewLayoutMargin(id, RemoteViews.MARGIN_TOP, top,
-                    TypedValue.COMPLEX_UNIT_PX);
-            views.setViewLayoutMargin(id, RemoteViews.MARGIN_RIGHT, right,
-                    TypedValue.COMPLEX_UNIT_PX);
-        }
-    }
-
-    /**
-     * Drives the countdown with a Chronometer. Unlike the bitmap countdown this
-     * is a real RemoteViews view, so the launcher updates the seconds itself.
-     * On API < 31 there is no reliable way to position a child inside the
-     * bitmap at arbitrary widget sizes; the renderer then falls back to the
-     * minute-accurate static line.
-     */
-    private static void bindCountdown(Context context, Context themed, RemoteViews views,
-                                      PrayerClock.Snapshot snapshot, int[] px,
-                                      boolean live, int viewId, float designWDp,
-                                      float designHDp, float padDp, float baselineDp,
-                                      float textSizeSp) {
-        if (!live) {
-            views.setViewVisibility(viewId, View.GONE);
+    private static void bindLiveDigits(Context context, Context themed, RemoteViews views,
+                                       WidgetRenderer.Live nowField,
+                                       WidgetRenderer.Live countdownField,
+                                       PrayerClock.Snapshot snapshot, Instant now,
+                                       boolean live) {
+        if (!live || nowField == null || countdownField == null) {
+            for (int id : LIVE_FLIPPERS) {
+                views.setViewVisibility(id, View.GONE);
+            }
             return;
         }
 
-        views.setViewVisibility(viewId, View.VISIBLE);
-        long remainingMs = Math.max(0L, snapshot.next.instant.toEpochMilli()
-                - System.currentTimeMillis());
-        long base = SystemClock.elapsedRealtime() + remainingMs;
-        views.setChronometerCountDown(viewId, true);
-        views.setChronometer(viewId, base, "IN %s", true);
-        views.setTextColor(viewId, themed.getColor(R.color.fg));
+        int fg = themed.getColor(R.color.fg);
+        tint(views, NOW_SECONDS_IDS, fg);
+        tint(views, COUNTDOWN_SECONDS_IDS, fg);
 
-        float density = context.getResources().getDisplayMetrics().density;
-        float designW = designWDp * density;
-        float designH = designHDp * density;
-        float scale = Math.min(px[0] / designW, px[1] / designH);
-        float sizePx = Math.max(1f, textSizeSp * density * scale);
-        views.setTextViewTextSize(viewId, TypedValue.COMPLEX_UNIT_PX, sizePx);
+        int second = now.atZone(ZoneId.systemDefault()).getSecond();
+        views.setDisplayedChild(R.id.wNowSeconds, second);
 
-        int left = Math.round((px[0] - designW * scale) / 2f
-                + padDp * density * scale);
-        int top = Math.round((px[1] - designH * scale) / 2f
-                + baselineDp * density * scale - sizePx);
-        views.setViewLayoutMargin(viewId, RemoteViews.MARGIN_LEFT, left,
+        long remainingSeconds = Math.max(0L, snapshot.next.instant.toEpochMilli()
+                - now.toEpochMilli()) / 1000L;
+        int countdownSecond = (int) (remainingSeconds % 60L);
+        views.setDisplayedChild(R.id.wCountdownSeconds, 59 - countdownSecond);
+
+        place(views, R.id.wNowSeconds, nowField);
+        place(views, R.id.wCountdownSeconds, countdownField);
+
+        for (int id : LIVE_FLIPPERS) {
+            views.setViewVisibility(id, View.VISIBLE);
+        }
+    }
+
+    private static void tint(RemoteViews views, int[] ids, int color) {
+        for (int id : ids) {
+            // White vector glyphs become the current foreground colour.
+            views.setInt(id, "setColorFilter", color);
+        }
+    }
+
+    private static void place(RemoteViews views, int id, WidgetRenderer.Live field) {
+        views.setViewLayoutMargin(id, RemoteViews.MARGIN_LEFT, field.left,
                 TypedValue.COMPLEX_UNIT_PX);
-        views.setViewLayoutMargin(viewId, RemoteViews.MARGIN_TOP, top,
+        views.setViewLayoutMargin(id, RemoteViews.MARGIN_TOP, field.top,
                 TypedValue.COMPLEX_UNIT_PX);
+        views.setViewLayoutWidth(id, field.width, TypedValue.COMPLEX_UNIT_PX);
+        views.setViewLayoutHeight(id, field.height, TypedValue.COMPLEX_UNIT_PX);
     }
 
     /**

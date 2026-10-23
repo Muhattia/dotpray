@@ -1,10 +1,18 @@
 package com.dotpray.app.prayer;
 
 import java.time.LocalDate;
+import java.time.chrono.HijrahDate;
+import java.time.temporal.ChronoField;
 
 /**
- * Gregorian to Hijri conversion using the published Umm al-Qura algorithm.
- * Kept dependency free so it behaves identically on every Android release.
+ * Gregorian to Hijri conversion using the Umm al-Qura calendar.
+ *
+ * <p>The platform {@link HijrahDate} is the authoritative source: its
+ * {@code islamic-umalqura} variant carries the Saudi month-length table and
+ * handles the one-day month boundaries that a simple arithmetic calendar
+ * cannot reproduce. The arithmetic fallback is kept only for the unlikely
+ * case where the platform chronology rejects a date; it is not used on current
+ * Android releases.
  */
 public final class Hijri {
 
@@ -31,6 +39,19 @@ public final class Hijri {
     }
 
     public static Hijri from(LocalDate date) {
+        try {
+            HijrahDate hijrah = HijrahDate.from(date);
+            return new Hijri(
+                    (int) hijrah.get(ChronoField.YEAR_OF_ERA),
+                    (int) hijrah.get(ChronoField.MONTH_OF_YEAR),
+                    (int) hijrah.get(ChronoField.DAY_OF_MONTH));
+        } catch (RuntimeException e) {
+            return tabular(date);
+        }
+    }
+
+    /** Arithmetic fallback, used only if the platform Umm al-Qura table is absent. */
+    private static Hijri tabular(LocalDate date) {
         int jd = julianDay(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
         long l0 = jd - 1948440L + 10632L;
         long n = (l0 - 1) / 10631L;

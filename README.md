@@ -20,7 +20,7 @@ No ads, no tracking, no AndroidX. The app has no `INTERNET` permission.
 (`tools/render_preview.py`), not screenshots. The app and both widgets share
 the in-app System / Light / Dark choice.*
 
-*First build — version 1.2.*
+*Version 1.4 — dotted live seconds and Umm al-Qura dates.*
 
 ---
 
@@ -33,7 +33,7 @@ the in-app System / Light / Dark choice.*
 | **Fixed method** | Egyptian General Authority of Survey — Fajr 19.5° / Isha 17.5° |
 | **Asr schools** | Standard (Shafi'i/Maliki/Hanbali) or Hanafi (shadow factor 2) |
 | **Current location** | GPS fix, rechecked every 15 minutes while the app is open, named by the system geocoder with a nearest-city fallback |
-| **Hijri date** | Umm al-Qura calendar, self-contained algorithm |
+| **Hijri date** | Umm al-Qura calendar through the platform chronology |
 | **Qibla** | Great-circle bearing to the Kaaba from your coordinates |
 | **Prayer alerts** | Notification at each prayer time, survives reboot and time-zone changes |
 | **12 / 24 hour** | Switchable, on the device and in the widget |
@@ -59,7 +59,7 @@ build it locally with `./build.sh`:
 
 ```bash
 ./build.sh
-adb install -r dist/dotpray-1.2.apk
+adb install -r dist/dotpray-1.4.apk
 ```
 
 Or copy the built APK to the phone and open it (you will need to allow
@@ -77,9 +77,10 @@ architecture family.
 Or use the **ADD WIDGET** button inside the app, which asks the launcher to pin
 it for you.
 
-The current time and the next-prayer countdown are native widget `TextClock`
-and `Chronometer` views, so their seconds tick in the launcher even when the
-app is not running. The bitmap (next prayer, Hijri date, progress, prayer strip)
+The moving seconds in the wall clock and next-prayer countdown are Doto glyph
+vectors inside `ViewFlipper`s. The launcher advances those tiny views itself,
+so the seconds stay live even when the app is not running, without a service or
+a per-second alarm. The bitmap (next prayer, Hijri date, progress, prayer strip)
 still redraws on every minute boundary (a non-wakeup `RTC` alarm, exact when the
 OS allows it and `setAndAllowWhileIdle` otherwise), immediately when the device
 is unlocked, on every prayer boundary, on resize, on boot, whenever the clock
@@ -113,7 +114,7 @@ Requirements:
 | Build tools | `37.0.0` |
 | minSdk / targetSdk | 26 / 35 |
 
-Output: `dist/dotpray-1.2.apk`, signed with a debug key that is generated on
+Output: `dist/dotpray-1.4.apk`, signed with a debug key that is generated on
 first run at `keystore/dotpray.keystore` (outside `build/`, so rebuilds keep the
 same certificate and new versions install over old ones).
 
@@ -200,9 +201,10 @@ dotpray/
 │   └── res/                     layouts, dot-matrix drawables, Doto fonts, widget providers
 ├── tools/
 │   ├── TestTimes.java           JVM harness that prints the computed times
+│   ├── gen_live_digits.py       traces Doto digits into widget vector drawables
 │   ├── make_icons.py            regenerates launcher icons from the SVG
 │   └── render_preview.py        renders preview/*.png from the real layouts
-└── dist/dotpray-1.2.apk
+└── dist/dotpray-1.4.apk
 ```
 
 ### Design details
@@ -227,10 +229,10 @@ dotpray/
   so resizing can never make the lines collide. The whole card is one click
   target (`wRoot`); settings live only in the app's bottom button. This is what
   guarantees Doto on One UI, where `@font` inside `RemoteViews` is ignored.
-  The live wall clock and countdown are native `TextClock` / `Chronometer`
-  children; Android does not let a bitmap animate its own seconds. Those two
-  fields use the system monospace face because RemoteViews cannot load an
-  app-private font.
+  The seconds are Doto glyph vectors flipped by the launcher; the rest of the
+  clock and countdown is painted into the same bitmap and refreshed on the
+  minute boundary. That keeps the seconds moving in Doto without a background
+  service or a second-by-second alarm.
 * **Notifications** use `AlarmManager.setAndAllowWhileIdle`, so no
   `SCHEDULE_EXACT_ALARM` permission is needed and the app works on Android 12+.
 
