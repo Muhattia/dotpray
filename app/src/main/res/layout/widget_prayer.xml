@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The whole card is drawn by WidgetRenderer into a bitmap: RemoteViews cannot
-  carry a custom Typeface, so laying the widget out with TextViews would show
-  the system font instead of Doto. Only the click targets remain real views.
+  The card artwork is drawn by WidgetRenderer into a bitmap: RemoteViews cannot
+  carry the Doto Typeface, so laying the whole widget out with TextViews would
+  lose the dot-matrix look. The two time-sensitive views are real RemoteViews
+  children: a TextClock for the live wall clock and a Chronometer for the
+  second-by-second prayer countdown. Both tick in the launcher process, so they
+  stay live even when the app has been killed.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/wRoot"
@@ -16,5 +19,56 @@
         android:contentDescription="@string/app_name"
         android:scaleType="fitXY"
         android:src="@drawable/widget_preview" />
+
+    <!-- 24-hour current time (forced 24h even when the phone is set to 12h). -->
+    <TextClock
+        android:id="@+id/wNow24"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="16dp"
+        android:fontFamily="monospace"
+        android:format12Hour="HH:mm:ss"
+        android:format24Hour="HH:mm:ss"
+        android:includeFontPadding="false"
+        android:letterSpacing="0.04"
+        android:textColor="@color/fg"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <!-- 12-hour current time (forced 12h even when the phone is set to 24h). -->
+    <TextClock
+        android:id="@+id/wNow12"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="16dp"
+        android:fontFamily="monospace"
+        android:format12Hour="h:mm:ss a"
+        android:format24Hour="h:mm:ss a"
+        android:includeFontPadding="false"
+        android:letterSpacing="0.04"
+        android:textColor="@color/fg"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <Chronometer
+        android:id="@+id/wCountdown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:countDown="true"
+        android:fontFamily="monospace"
+        android:format="IN %s"
+        android:includeFontPadding="false"
+        android:letterSpacing="0.04"
+        android:textColor="@color/fg"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
 
 </FrameLayout>

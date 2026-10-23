@@ -14,6 +14,12 @@ public final class Hijri {
             "RAMADAN", "SHAWWAL", "DHU AL-QIDAH", "DHU AL-HIJJAH"
     };
 
+    /** Shorter forms for the tightly constrained widget lines. */
+    private static final String[] SHORT_MONTHS = {
+            "MUH", "SAF", "RABI I", "RABI II", "JUM I", "JUM II",
+            "RAJAB", "SHABAN", "RAMADAN", "SHAWWAL", "DHU Q", "DHU H"
+    };
+
     private final int year;
     private final int month;
     private final int day;
@@ -42,6 +48,12 @@ public final class Hijri {
     /** e.g. "10 JUMADA AL-AWWAL 1448" */
     public String label() {
         String name = MONTHS[Math.max(0, Math.min(11, month - 1))];
+        return day + " " + name + " " + year;
+    }
+
+    /** e.g. "10 JUM I 1448" for the widget's narrow date line. */
+    public String shortLabel() {
+        String name = SHORT_MONTHS[Math.max(0, Math.min(11, month - 1))];
         return day + " " + name + " " + year;
     }
 

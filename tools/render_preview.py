@@ -183,7 +183,7 @@ def render_app(path=None):
     spaced(dr, (L + d(26), y + d(9)), "CAIRO", font(MONO_B, 10), FG, 0.18)
 
     spaced(dr, (R, y + d(3)), "THU / 22 OCT 2026", f_label, FG_DIM, 0.18, anchor="ra")
-    spaced(dr, (R, y + d(18)), "11 JUMADA I 1448", f_label_faint, FG_FAINT, 0.14, anchor="ra")
+    spaced(dr, (R, y + d(18)), "10 JUMADA I 1448", f_label_faint, FG_FAINT, 0.14, anchor="ra")
 
     y += pill_h + d(18)
 
@@ -356,13 +356,14 @@ def render_widget_wide(width_dp=326, height_dp=150, path=None, drawable=None):
     pad = d(16)
     header = d(23)
     divider = DH - d(42)
-    name_base = divider - d(52)
-    meta_base = divider - d(30)
-    count_base = divider - d(14)
-    clock_base = divider - d(30)
+    name_base = divider - d(56)
+    clock_base = divider - d(34)
+    meta_base = divider - d(22)
+    count_base = divider - d(8)
 
     f_10b = doto("bold", 10)
     f_9b = doto("bold", 9)
+    f_11b = doto("bold", 11)
     f_22 = doto("bold", 22)
     f_46 = doto("bold", 46)
     f_14 = doto("bold", 14)
@@ -370,11 +371,13 @@ def render_widget_wide(width_dp=326, height_dp=150, path=None, drawable=None):
 
     cd.ellipse([pad, d(16), pad + d(6), d(22)], fill=ACCENT)
     _spaced_px(cd, (pad + d(13), header), "NEXT PRAYER", f_10b, d(10), FG_DIM, 0.18)
-    _spaced_px(cd, (DW - pad, header), "CAIRO", f_10b, d(10), FG_FAINT, 0.14, "right")
+    _spaced_px(cd, (DW - pad - d(96), header), "CAIRO", f_10b, d(10), FG_FAINT, 0.14, "right")
+    _spaced_px(cd, (DW - pad, header), "21:42:05", f_11b, d(11), FG, 0.04, "right")
 
     cd.text((pad, name_base), "MAGHRIB", font=f_22, fill=FG, anchor="ls")
-    _spaced_px(cd, (pad, meta_base), "THU 22 OCT · TODAY", f_10b, d(10), FG_FAINT, 0.04)
-    _spaced_px(cd, (pad, count_base), "IN 1H 25M", f_13, d(13), FG, 0.06)
+    _spaced_px(cd, (pad, meta_base), "THU 22 OCT · 10 JUM I 1448 · TODAY",
+               f_9b, d(9), FG_FAINT, 0.04)
+    _spaced_px(cd, (pad, count_base), "IN 1:25:12", f_13, d(13), FG, 0.06)
     cd.text((DW - pad, clock_base), "18:17", font=f_46, fill=FG, anchor="rs")
 
     # progress hairline
@@ -423,18 +426,19 @@ def render_widget_small(width_dp=150, height_dp=150, path=None, drawable=None):
     name_base = DH - d(100)
 
     f_10b = doto("bold", 10)
+    f_9b = doto("bold", 9)
     f_19 = doto("bold", 19)
     f_36 = doto("bold", 36)
     f_11 = doto("regular", 11)
 
     cd.ellipse([pad, d(16.5), pad + d(5), d(21.5)], fill=ACCENT)
     _spaced_px(cd, (pad + d(10), header), "NEXT", f_10b, d(10), FG_DIM, 0.18)
-    _spaced_px(cd, (DW - pad, header), "CAIRO", f_10b, d(10), FG_FAINT, 0.14, "right")
+    _spaced_px(cd, (DW - d(11), header), "21:42:05", f_9b, d(9), FG, 0.03, "right")
 
     cd.text((pad, name_base), "MAGHRIB", font=f_19, fill=FG, anchor="ls")
     cd.text((pad, clock_base), "18:17", font=f_36, fill=FG, anchor="ls")
-    _spaced_px(cd, (pad, count_base), "IN 1H 25M", f_11, d(11), FG, 0.05)
-    _spaced_px(cd, (pad, meta_base), "TODAY", f_10b, d(10), FG_FAINT, 0.14)
+    _spaced_px(cd, (pad, count_base), "IN 1:25:12", f_11, d(11), FG, 0.05)
+    _spaced_px(cd, (pad, meta_base), "CAIRO · 10 JUM I 1448", f_9b, d(9), FG_FAINT, 0.08)
 
     _compose(img, layer, DW, DH)
 

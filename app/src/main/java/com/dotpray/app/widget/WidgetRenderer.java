@@ -12,6 +12,7 @@ import android.graphics.Typeface;
 
 import com.dotpray.app.R;
 import com.dotpray.app.data.Format;
+import com.dotpray.app.prayer.Hijri;
 import com.dotpray.app.prayer.Prayer;
 import com.dotpray.app.prayer.PrayerCalculator;
 import com.dotpray.app.prayer.PrayerClock;
@@ -25,12 +26,12 @@ import java.util.Locale;
  *
  * <p>RemoteViews cannot carry a custom {@code Typeface}: the launcher inflates
  * the layout with its own resources, so {@code android:fontFamily="@font/..."}
- * silently falls back to the system face. That left the widget in Roboto while
- * the app was in Doto. Rendering the whole card into a bitmap here means the
- * widget is typographically identical to the app, and it also removes the
- * Chronometer, whose base has to be in {@code SystemClock.elapsedRealtime()}
- * rather than wall-clock milliseconds (the 1.1 widget showed "IN 497916:07:08"
- * because of exactly that mismatch).
+ * silently falls back to the system face. Rendering the card artwork into a
+ * bitmap keeps the static type in Doto. The wall clock and the prayer countdown
+ * are the two exceptions: they are real {@code TextClock} / {@code Chronometer}
+ * views in the widget layout so their seconds tick in the launcher even when
+ * the app is not running. The Chronometer base is set from
+ * {@code SystemClock.elapsedRealtime()}, not wall-clock milliseconds.
  */
 public final class WidgetRenderer {
 
@@ -41,7 +42,8 @@ public final class WidgetRenderer {
 
     /** Renders the wide 4x2 card. */
     public static Bitmap wide(Context context, PrayerClock.Snapshot snapshot,
-                              boolean use24, int widthPx, int heightPx) {
+                              boolean use24, int widthPx, int heightPx,
+                              boolean liveCountdown) {
         Ink ink = new Ink(context, widthPx, heightPx);
         ink.card();
         ink.dotField();
@@ -61,26 +63,33 @@ public final class WidgetRenderer {
         float pad = ink.dp(16);
         float header = ink.dp(23);
         float divider = designH - ink.dp(42);
-        float nameBase = divider - ink.dp(52);
-        float metaBase = divider - ink.dp(30);
-        float countBase = divider - ink.dp(14);
-        float clockBase = divider - ink.dp(30);
+        // With the Hijri date on the meta line, the meta line needs the full
+        // width. Lift the big next-prayer time above it instead of letting the
+        // two overlap on the right.
+        float nameBase = divider - ink.dp(56);
+        float clockBase = divider - ink.dp(34);
+        float metaBase = divider - ink.dp(22);
+        float countBase = divider - ink.dp(8);
 
         c.drawCircle(pad + ink.dp(3), ink.dp(19), ink.dp(3), ink.fill(ACCENT));
         ink.text("NEXT PRAYER", pad + ink.dp(13), header,
                 ink.label(), ink.dim, 0.18f, Paint.Align.LEFT);
 
         String city = snapshot.place.name.toUpperCase(Locale.US);
-        float cityRight = designW - pad;
-        ink.text(ink.fit(city, ink.label(), cityRight - (pad + ink.dp(102)), 0.14f),
+        // Leave the top-right clear for the native second-by-second clock.
+        float cityRight = designW - pad - ink.dp(96);
+        float cityLeft = pad + ink.dp(100);
+        ink.text(ink.fit(city, ink.label(), Math.max(ink.dp(20), cityRight - cityLeft), 0.14f),
                 cityRight, header, ink.label(), ink.faint, 0.14f, Paint.Align.RIGHT);
 
         ink.text(snapshot.next.prayer.label.toUpperCase(Locale.US), pad, nameBase,
                 ink.display(22), ink.fg, 0.04f, Paint.Align.LEFT);
-        ink.text(meta(snapshot), pad, metaBase, ink.label(), ink.faint, 0.04f,
-                Paint.Align.LEFT);
-        ink.text(countdown(snapshot), pad, countBase, ink.value(13), ink.fg, 0.06f,
-                Paint.Align.LEFT);
+        ink.text(ink.fit(meta(snapshot), ink.label(9.5f), designW - pad * 2, 0.04f),
+                pad, metaBase, ink.label(9.5f), ink.faint, 0.04f, Paint.Align.LEFT);
+        if (!liveCountdown) {
+            ink.text(countdown(snapshot), pad, countBase, ink.value(13), ink.fg, 0.06f,
+                    Paint.Align.LEFT);
+        }
 
         float clockSize = 46;
         String period = use24 ? "" : Format.meridiem(snapshot.next.local);
@@ -122,7 +131,8 @@ public final class WidgetRenderer {
 
     /** Renders the compact 2x2 card. */
     public static Bitmap small(Context context, PrayerClock.Snapshot snapshot,
-                               boolean use24, int widthPx, int heightPx) {
+                               boolean use24, int widthPx, int heightPx,
+                               boolean liveCountdown) {
         Ink ink = new Ink(context, widthPx, heightPx);
         ink.card();
         ink.dotField();
@@ -146,10 +156,6 @@ public final class WidgetRenderer {
         ink.text("NEXT", pad + ink.dp(10), header, ink.label(), ink.dim, 0.18f,
                 Paint.Align.LEFT);
 
-        String city = snapshot.place.name.toUpperCase(Locale.US);
-        ink.text(ink.fit(city, ink.label(), designW - pad * 2 - ink.dp(62), 0.14f),
-                designW - pad, header, ink.label(), ink.faint, 0.14f, Paint.Align.RIGHT);
-
         ink.text(snapshot.next.prayer.label.toUpperCase(Locale.US), pad, nameBase,
                 ink.display(19), ink.fg, 0.04f, Paint.Align.LEFT);
 
@@ -163,10 +169,12 @@ public final class WidgetRenderer {
                     clockBase - ink.dp(6), ink.label(), ink.faint, 0.14f, Paint.Align.LEFT);
         }
 
-        ink.text(countdown(snapshot), pad, countBase, ink.value(11), ink.fg, 0.05f,
-                Paint.Align.LEFT);
-        ink.text(snapshot.nextIsTomorrow ? "TOMORROW" : "TODAY", pad, metaBase,
-                ink.label(), ink.faint, 0.14f, Paint.Align.LEFT);
+        if (!liveCountdown) {
+            ink.text(countdown(snapshot), pad, countBase, ink.value(11), ink.fg, 0.05f,
+                    Paint.Align.LEFT);
+        }
+        ink.text(ink.fit(smallMeta(snapshot), ink.label(8.5f), designW - pad * 2, 0.08f),
+                pad, metaBase, ink.label(8.5f), ink.faint, 0.08f, Paint.Align.LEFT);
 
         c.restore();
         return ink.bitmap;
@@ -179,7 +187,7 @@ public final class WidgetRenderer {
         return snapshot.next.prayer.label + " at " + time + ", " + countdown(snapshot);
     }
 
-    /** "IN 2H 14M" — always minute-accurate because the bitmap is redrawn each minute. */
+    /** Minute-accurate fallback used for accessibility and pre-Android 12. */
     static String countdown(PrayerClock.Snapshot snapshot) {
         long ms = Math.max(0L, snapshot.next.instant.toEpochMilli()
                 - Instant.now().toEpochMilli());
@@ -196,7 +204,26 @@ public final class WidgetRenderer {
     private static String meta(PrayerClock.Snapshot snapshot) {
         String date = DateTimeFormatter.ofPattern("EEE d MMM", Locale.US)
                 .format(snapshot.next.local).toUpperCase(Locale.US);
-        return date + " \u00b7 " + (snapshot.nextIsTomorrow ? "TOMORROW" : "TODAY");
+        String hijri = hijri(snapshot);
+        String status = snapshot.nextIsTomorrow ? "TOMORROW" : "TODAY";
+        return hijri.isEmpty()
+                ? date + " \u00b7 " + status
+                : date + " \u00b7 " + hijri + " \u00b7 " + status;
+    }
+
+    private static String smallMeta(PrayerClock.Snapshot snapshot) {
+        String hijri = hijri(snapshot);
+        String city = snapshot.place.name.toUpperCase(Locale.US);
+        if (hijri.isEmpty()) return city;
+        return city + " \u00b7 " + hijri;
+    }
+
+    private static String hijri(PrayerClock.Snapshot snapshot) {
+        try {
+            return Hijri.from(snapshot.next.local.toLocalDate()).shortLabel();
+        } catch (RuntimeException e) {
+            return "";
+        }
     }
 
     /** Paint, canvas and unit helpers for one render pass. */

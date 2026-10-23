@@ -11,4 +11,54 @@
         android:contentDescription="@string/app_name"
         android:scaleType="fitXY"
         android:src="@drawable/widget_preview_small" />
+
+    <TextClock
+        android:id="@+id/wNow24"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="11dp"
+        android:fontFamily="monospace"
+        android:format12Hour="HH:mm:ss"
+        android:format24Hour="HH:mm:ss"
+        android:includeFontPadding="false"
+        android:letterSpacing="0.03"
+        android:textColor="@color/fg"
+        android:textSize="9sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <TextClock
+        android:id="@+id/wNow12"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="11dp"
+        android:fontFamily="monospace"
+        android:format12Hour="h:mm:ss a"
+        android:format24Hour="h:mm:ss a"
+        android:includeFontPadding="false"
+        android:letterSpacing="0.03"
+        android:textColor="@color/fg"
+        android:textSize="9sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <Chronometer
+        android:id="@+id/wCountdown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:countDown="true"
+        android:fontFamily="monospace"
+        android:format="IN %s"
+        android:includeFontPadding="false"
+        android:letterSpacing="0.04"
+        android:textColor="@color/fg"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
 </FrameLayout>

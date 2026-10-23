@@ -9,13 +9,15 @@ import android.os.Build;
 /**
  * Re-renders the widgets on the next minute boundary.
  *
- * <p>The cards are bitmaps now (RemoteViews has no custom-font support), so the
- * countdown cannot be a self-ticking Chronometer. A non-wakeup {@code RTC}
- * alarm is used rather than {@code RTC_WAKEUP}: it fires while the device is
- * awake, and is deferred when it is not, which is exactly when nobody can see
- * the widget. Nothing wakes the phone up every minute. The launcher redraws
- * again immediately when the device is unlocked, so a delayed idle alarm can
- * never leave yesterday's countdown on screen.
+ * <p>The card artwork is a bitmap (RemoteViews has no custom-font support), so
+ * the static parts still need a redraw when the minute, day, theme or location
+ * changes. The live wall clock and countdown are native remote views and tick
+ * independently. A non-wakeup {@code RTC} alarm is used rather than
+ * {@code RTC_WAKEUP}: it fires while the device is awake, and is deferred when
+ * it is not, which is exactly when nobody can see the widget. Nothing wakes the
+ * phone up every minute. The launcher refreshes again immediately when the
+ * device is unlocked, so a delayed idle alarm cannot leave stale static data
+ * on screen.
  */
 final class WidgetTick {
 

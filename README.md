@@ -20,7 +20,7 @@ No ads, no tracking, no AndroidX. The app has no `INTERNET` permission.
 (`tools/render_preview.py`), not screenshots. The app and both widgets share
 the in-app System / Light / Dark choice.*
 
-*First build — version 1.1.*
+*First build — version 1.2.*
 
 ---
 
@@ -29,7 +29,7 @@ the in-app System / Light / Dark choice.*
 | | |
 |---|---|
 | **Live prayer clock** | Next prayer, its time, and a ticking `HH:MM:SS` countdown |
-| **Two widgets** | A wide `4×2` widget with a full prayer strip, and a compact `2×2` widget |
+| **Two widgets** | Wide `4×2` and compact `2×2`; a live wall clock with seconds, a live `HH:MM:SS` countdown, and the Hijri date |
 | **Fixed method** | Egyptian General Authority of Survey — Fajr 19.5° / Isha 17.5° |
 | **Asr schools** | Standard (Shafi'i/Maliki/Hanbali) or Hanafi (shadow factor 2) |
 | **Current location** | GPS fix, rechecked every 15 minutes while the app is open, named by the system geocoder with a nearest-city fallback |
@@ -54,12 +54,12 @@ starting point.
 
 ## Installing
 
-Download the signed **v1.1** APK from the repository's **Releases** page, or
+Download the latest signed APK from the repository's **Releases** page, or
 build it locally with `./build.sh`:
 
 ```bash
 ./build.sh
-adb install -r dist/dotpray-1.1.apk
+adb install -r dist/dotpray-1.2.apk
 ```
 
 Or copy the built APK to the phone and open it (you will need to allow
@@ -77,11 +77,14 @@ architecture family.
 Or use the **ADD WIDGET** button inside the app, which asks the launcher to pin
 it for you.
 
-The widget redraws on every minute boundary (a non-wakeup `RTC` alarm, exact
-when the OS allows it and `setAndAllowWhileIdle` otherwise), immediately when
-the device is unlocked, on every prayer boundary, on resize, on boot, whenever
-the clock or the time zone changes, and immediately when the app's theme
-choice or location changes.
+The current time and the next-prayer countdown are native widget `TextClock`
+and `Chronometer` views, so their seconds tick in the launcher even when the
+app is not running. The bitmap (next prayer, Hijri date, progress, prayer strip)
+still redraws on every minute boundary (a non-wakeup `RTC` alarm, exact when the
+OS allows it and `setAndAllowWhileIdle` otherwise), immediately when the device
+is unlocked, on every prayer boundary, on resize, on boot, whenever the clock
+or the time zone changes, and immediately when the app's theme choice or
+location changes.
 
 ---
 
@@ -110,7 +113,7 @@ Requirements:
 | Build tools | `37.0.0` |
 | minSdk / targetSdk | 26 / 35 |
 
-Output: `dist/dotpray-1.1.apk`, signed with a debug key that is generated on
+Output: `dist/dotpray-1.2.apk`, signed with a debug key that is generated on
 first run at `keystore/dotpray.keystore` (outside `build/`, so rebuilds keep the
 same certificate and new versions install over old ones).
 
@@ -199,7 +202,7 @@ dotpray/
 │   ├── TestTimes.java           JVM harness that prints the computed times
 │   ├── make_icons.py            regenerates launcher icons from the SVG
 │   └── render_preview.py        renders preview/*.png from the real layouts
-└── dist/dotpray-1.1.apk
+└── dist/dotpray-1.2.apk
 ```
 
 ### Design details
@@ -217,14 +220,17 @@ dotpray/
 * **Dot matrix.** `DotFieldView` paints a faint 22 dp dot grid behind every
   screen; `GlyphArcView` draws the dotted arc in the hero card; `PulseDotView`
   animates the red "next prayer" dot.
-* **The widget is a drawing, not a layout.** `widget/WidgetRenderer.java`
-  composes the card on a `Canvas` at the exact pixel size the launcher reports
+* **The widget is mostly a drawing.** `widget/WidgetRenderer.java` composes
+  the static card on a `Canvas` at the exact pixel size the launcher reports
   and pushes it with `setImageViewBitmap`. The composition is authored once in
   a 326 × 150 dp (wide) or 150 × 150 dp (compact) space and scaled uniformly,
   so resizing can never make the lines collide. The whole card is one click
   target (`wRoot`); settings live only in the app's bottom button. This is what
-  guarantees Doto on One UI, where `@font` inside
-  `RemoteViews` is ignored.
+  guarantees Doto on One UI, where `@font` inside `RemoteViews` is ignored.
+  The live wall clock and countdown are native `TextClock` / `Chronometer`
+  children; Android does not let a bitmap animate its own seconds. Those two
+  fields use the system monospace face because RemoteViews cannot load an
+  app-private font.
 * **Notifications** use `AlarmManager.setAndAllowWhileIdle`, so no
   `SCHEDULE_EXACT_ALARM` permission is needed and the app works on Android 12+.
 
