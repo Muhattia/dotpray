@@ -8,11 +8,10 @@ import android.view.View;
 
 import com.dotpray.app.R;
 
-/** Decorative concentric glyph arcs with a single red marker. */
+/** Decorative concentric glyph arcs behind the next-prayer header. */
 public class GlyphArcView extends View {
 
     private final Paint arc = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint dot = new Paint(Paint.ANTI_ALIAS_FLAG);
     private float density;
 
     public GlyphArcView(Context context) {
@@ -31,7 +30,6 @@ public class GlyphArcView extends View {
         arc.setStrokeWidth(1f * density);
         arc.setStrokeCap(Paint.Cap.ROUND);
         arc.setColor(getContext().getColor(R.color.arc));
-        dot.setColor(getContext().getColor(R.color.accent));
     }
 
     @Override
@@ -45,14 +43,6 @@ public class GlyphArcView extends View {
         drawArc(canvas, cx, cy, getWidth() * 0.34f, 215f, 120f);
         arc.setAlpha(11);
         drawArc(canvas, cx, cy, getWidth() * 0.22f, 230f, 90f);
-
-        // red marker riding the middle arc
-        double angle = Math.toRadians(238);
-        float r = getWidth() * 0.34f;
-        float mx = cx + (float) (r * Math.cos(angle));
-        float my = cy + (float) (r * Math.sin(angle));
-        dot.setAlpha(210);
-        canvas.drawCircle(mx, my, 2.4f * density, dot);
     }
 
     private void drawArc(Canvas canvas, float cx, float cy, float radius, float start, float sweep) {

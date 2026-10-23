@@ -277,7 +277,7 @@ def render_app(path=None):
     spaced(dr, (W // 2, y), "Calculated on device · No ads · No tracking",
            f_label_faint, FG_FAINT, 0.14, anchor="ma")
     y += d(20)
-    spaced(dr, (W // 2, y), "DOTPRAY 1.8 · DOTO (OFL)",
+    spaced(dr, (W // 2, y), "DOTPRAY 1.9 · DOTO (OFL)",
            f_label_faint, FOOTER, 0.14, anchor="ma")
 
     path = path or os.path.join(OUT_DIR, "app-screen.png")
@@ -363,7 +363,7 @@ def render_widget_wide(width_dp=326, height_dp=150, path=None, drawable=None):
     f_125 = doto("regular", 12.5)
     f_13 = doto("regular", 13)
 
-    cd.ellipse([pad, header - d(6), pad + d(6), header], fill=ACCENT)
+    cd.ellipse([pad, header - d(6.5), pad + d(6), header - d(0.5)], fill=ACCENT)
     _spaced_px(cd, (pad + d(13), header), "NEXT PRAYER", f_10b, d(10), FG_DIM, 0.18)
 
     # current time is context, aligned with the label but smaller and quieter
@@ -397,16 +397,25 @@ def render_widget_wide(width_dp=326, height_dp=150, path=None, drawable=None):
     cd.text((count_x + label_w + gap, count_base), count_text, font=f_125, fill=FG,
             anchor="ls")
 
-    # schedule, active prayer gets a small red label and a bright time
+    # schedule, active prayer gets a small red label and a bright time.
+    # Measure each block and spread the spare width into the gaps so the
+    # strip is flush with both ends of the divider instead of leaving an
+    # empty tail after Isha.
     cd.line([pad, divider, DW - pad, divider], fill=CARD_LINE, width=max(1, d(1)))
     names = [("FAJR", "05:34"), ("DHUHR", "12:40"), ("ASR", "15:51"),
              ("MAGHRIB", "18:17"), ("ISHA", "19:35")]
-    col = (DW - pad * 2) / 5
+    blocks = []
+    for n, t in names:
+        nw = sum(cd.textlength(ch, font=f_9b) for ch in n) + d(9) * 0.08 * (len(n) - 1)
+        tw = sum(cd.textlength(ch, font=f_13) for ch in t)
+        blocks.append(max(nw, tw))
+    gap = max(d(6), ((DW - pad * 2) - sum(blocks)) / (len(names) - 1))
+    x = pad
     for i, (n, t) in enumerate(names):
-        x = pad + col * i
         active = i == 3
         _spaced_px(cd, (x, d(118)), n, f_9b, d(9), ACCENT if active else FG_FAINT, 0.08)
         cd.text((x, d(136)), t, font=f_13, fill=FG if active else INACTIVE, anchor="ls")
+        x += blocks[i] + gap
 
     _compose(img, layer, DW, DH)
 
@@ -441,7 +450,7 @@ def render_widget_small(width_dp=150, height_dp=150, path=None, drawable=None):
     f_34 = doto("bold", 34)
     f_105 = doto("regular", 10.5)
 
-    cd.ellipse([pad, header - d(5), pad + d(5), header], fill=ACCENT)
+    cd.ellipse([pad, header - d(6), pad + d(5), header - d(1)], fill=ACCENT)
     _spaced_px(cd, (pad + d(9), header), "NEXT", f_10b, d(10), FG_DIM, 0.18)
     _spaced_px(cd, (DW - pad, header), "NOW 18:29:42", f_85b, d(8.5), FG_DIM, 0.0,
                "right")

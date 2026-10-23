@@ -111,7 +111,10 @@ public final class WidgetRenderer {
         float clockBase = ink.dp(69);
         float countBase = ink.dp(91);
 
-        c.drawCircle(pad + ink.dp(3), header + ink.dp(3), ink.dp(3), ink.fill(ACCENT));
+        // Centre the status dot on the Doto label's ink, not its baseline:
+        // the glyph box floats about 3.5dp above the baseline at 10sp.
+        c.drawCircle(pad + ink.dp(3), header - ink.dp(3.5f), ink.dp(3),
+                ink.fill(ACCENT));
         ink.text("NEXT PRAYER", pad + ink.dp(13), header,
                 ink.label(), ink.dim, 0.18f, Paint.Align.LEFT);
 
@@ -155,21 +158,43 @@ public final class WidgetRenderer {
         if (full) {
             float divider = ink.dp(104);
             ink.rule(pad, divider, designW - pad);
+
+            // Justify the five columns across the full card width. Equal
+            // columns left an obvious empty tail after Isha; measuring each
+            // prayer block and spreading the spare width into the gaps keeps
+            // the strip flush with both edges of the divider.
             Prayer[] prayers = Prayer.values();
-            float col = (designW - pad * 2) / 5f;
+            Paint namePaint = ink.label(9);
+            Paint timePaint = ink.display(13);
+            String[] names = new String[prayers.length];
+            String[] times = new String[prayers.length];
+            float[] blocks = new float[prayers.length];
+            float blockTotal = 0f;
             for (int i = 0; i < prayers.length; i++) {
-                float x = pad + col * i;
                 boolean active = prayers[i] == snapshot.next.prayer;
                 PrayerCalculator.Entry entry = snapshot.today.get(i);
                 // After Isha the next prayer is tomorrow's Fajr. Keep the strip
                 // useful by lighting its Fajr slot with that upcoming time.
                 if (active && snapshot.nextIsTomorrow) entry = snapshot.next;
-                ink.text(prayers[i].label.toUpperCase(Locale.US), x, ink.dp(118),
-                        ink.label(9), active ? ACCENT : ink.faint, 0.08f,
-                        Paint.Align.LEFT);
-                ink.text(use24 ? Format.time24(entry.local) : Format.time12(entry.local),
-                        x, ink.dp(136), ink.display(13),
+                names[i] = prayers[i].label.toUpperCase(Locale.US);
+                times[i] = use24 ? Format.time24(entry.local)
+                        : Format.time12(entry.local);
+                blocks[i] = Math.max(
+                        ink.trackedWidth(names[i], namePaint, 0.08f),
+                        ink.measure(times[i], timePaint));
+                blockTotal += blocks[i];
+            }
+            float gap = (designW - pad * 2f - blockTotal)
+                    / (prayers.length - 1);
+            gap = Math.max(ink.dp(6), gap);
+            float x = pad;
+            for (int i = 0; i < prayers.length; i++) {
+                boolean active = prayers[i] == snapshot.next.prayer;
+                ink.text(names[i], x, ink.dp(118), namePaint,
+                        active ? ACCENT : ink.faint, 0.08f, Paint.Align.LEFT);
+                ink.text(times[i], x, ink.dp(136), timePaint,
                         active ? ink.fg : ink.inactive, 0f, Paint.Align.LEFT);
+                x += blocks[i] + gap;
             }
         }
 
@@ -198,7 +223,7 @@ public final class WidgetRenderer {
         float pad = ink.dp(12);
         float header = ink.dp(16);
 
-        c.drawCircle(pad + ink.dp(2.5f), header + ink.dp(2.5f), ink.dp(2.5f),
+        c.drawCircle(pad + ink.dp(2.5f), header - ink.dp(3.5f), ink.dp(2.5f),
                 ink.fill(ACCENT));
         ink.text("NEXT", pad + ink.dp(9), header, ink.label(), ink.dim, 0.18f,
                 Paint.Align.LEFT);
