@@ -20,7 +20,7 @@ No ads, no tracking, no AndroidX. The app has no `INTERNET` permission.
 (`tools/render_preview.py`), not screenshots. The app and both widgets share
 the in-app System / Light / Dark choice.*
 
-*Version 1.10 — reliable prayer alerts, plus the coloured logo and monochrome status-bar icon.*
+*Version 1.2 — centred widgets, a live next-prayer rail, refreshed icons, and a smoother settings sheet.*
 
 ---
 
@@ -49,6 +49,12 @@ on the main screen still forces an immediate refresh. A fix is named through
 the platform geocoder; if the device is offline it falls back to the nearest
 bundled city within 150 km. Before the first fix, Cairo is used as a neutral
 starting point.
+
+## Google Play assets
+
+The Play Store listing copy, five phone screenshots, feature graphic, 512 px
+icon, privacy policy, and Data safety draft are in [`aso/`](aso/). Start with
+[`aso/README.md`](aso/README.md).
 
 ---
 
@@ -212,7 +218,9 @@ dotpray/
 │   ├── TestTimes.java           JVM harness that prints the computed times
 │   ├── gen_live_digits.py       traces Doto digits into widget vector drawables
 │   ├── make_icons.py            regenerates launcher icons from the SVG
+│   ├── make_aso.py              builds the Google Play listing graphics
 │   └── render_preview.py        renders preview/*.png from the real layouts
+├── aso/                         Play Store copy, screenshots, graphics, policy
 └── dist/dotpray-1.2.apk
 ```
 
