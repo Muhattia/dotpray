@@ -59,7 +59,7 @@ build it locally with `./build.sh`:
 
 ```bash
 ./build.sh
-adb install -r dist/dotpray-1.12.apk
+adb install -r dist/dotpray-1.2.apk
 ```
 
 Or copy the built APK to the phone and open it (you will need to allow
@@ -123,7 +123,7 @@ Requirements:
 | Build tools | `37.0.0` |
 | minSdk / targetSdk | 26 / 35 |
 
-Output: `dist/dotpray-1.12.apk`, signed with a debug key that is generated on
+Output: `dist/dotpray-1.2.apk`, signed with a debug key that is generated on
 first run at `keystore/dotpray.keystore` (outside `build/`, so rebuilds keep the
 same certificate and new versions install over old ones).
 
@@ -213,7 +213,7 @@ dotpray/
 │   ├── gen_live_digits.py       traces Doto digits into widget vector drawables
 │   ├── make_icons.py            regenerates launcher icons from the SVG
 │   └── render_preview.py        renders preview/*.png from the real layouts
-└── dist/dotpray-1.12.apk
+└── dist/dotpray-1.2.apk
 ```
 
 ### Design details
