@@ -51,6 +51,31 @@ public final class Place {
     }
 
     /**
+     * Compact name for the primary header. Geocoder results can be a full
+     * neighbourhood or street; the header only needs the locality. The caller
+     * still ellipsizes this if the available width is even smaller.
+     */
+    public String shortName() {
+        String value = name == null ? "" : name.trim();
+        int comma = value.indexOf(',');
+        if (comma > 0) value = value.substring(0, comma).trim();
+        if (value.length() > 20) {
+            // Prefer the first two words over a mid-word cut: geocoded
+            // neighbourhood names are often "Al Manteqah Al Gharbeyah" and
+            // "Al Manteqah" reads as a place, while "Al Manteqah Al" does not.
+            int firstSpace = value.indexOf(' ');
+            int secondSpace = firstSpace > 0 ? value.indexOf(' ', firstSpace + 1) : -1;
+            if (secondSpace > 0) value = value.substring(0, secondSpace).trim();
+            if (value.length() > 20) {
+                int cut = value.lastIndexOf(' ', 20);
+                if (cut < 10) cut = 20;
+                value = value.substring(0, cut).trim();
+            }
+        }
+        return value.isEmpty() ? "CURRENT" : value;
+    }
+
+    /**
      * Nearest bundled city, or {@code null} when every preset is farther than
      * {@code maxKm}. Used as the offline fallback when the platform geocoder
      * has no answer.

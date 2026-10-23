@@ -54,12 +54,14 @@ public final class WidgetRenderer {
         public final int top;
         public final int width;
         public final int height;
+        public final int color;
 
-        Live(int left, int top, int width, int height) {
+        Live(int left, int top, int width, int height, int color) {
             this.left = left;
             this.top = top;
             this.width = width;
             this.height = height;
+            this.color = color;
         }
     }
 
@@ -84,12 +86,16 @@ public final class WidgetRenderer {
         ink.card();
         ink.dotField();
 
-        // Everything below is laid out once, in a 326 x 150 dp design space,
-        // then scaled uniformly to whatever the launcher gave us. That keeps
-        // the composition intact at every resize instead of letting lines
-        // collide when a widget is squeezed.
+        // The wide widget is composed in a 326 x 150 dp design space. When the
+        // launcher gives it less height (or a narrow resize), the schedule is
+        // dropped instead of shrinking every line into illegibility.
+        float density = context.getResources().getDisplayMetrics().density;
+        float widthDp = widthPx / density;
+        float heightDp = heightPx / density;
+        boolean full = widthDp >= 280f && heightDp >= 128f;
+
         float designW = ink.dp(326);
-        float designH = ink.dp(150);
+        float designH = ink.dp(full ? 150 : 104);
         float scale = Math.min(ink.W / designW, ink.H / designH);
         float offsetX = (ink.W - designW * scale) / 2f;
         float offsetY = (ink.H - designH * scale) / 2f;
@@ -99,72 +105,72 @@ public final class WidgetRenderer {
         c.scale(scale, scale);
 
         float pad = ink.dp(16);
-        float header = ink.dp(23);
-        float divider = designH - ink.dp(42);
-        // With the Hijri date on the meta line, the meta line needs the full
-        // width. Lift the big next-prayer time above it instead of letting the
-        // two overlap on the right.
-        float nameBase = divider - ink.dp(56);
-        // Keep the hero time slightly above the meta line. The meta line is
-        // allowed to run under it horizontally, so it needs a clear vertical
-        // gap rather than a shorter string.
-        float clockBase = divider - ink.dp(42);
-        float metaBase = divider - ink.dp(19);
-        float countBase = divider - ink.dp(6);
+        float header = ink.dp(17);
+        float metaBase = ink.dp(31);
+        float nameBase = ink.dp(55);
+        float clockBase = ink.dp(69);
+        float countBase = ink.dp(91);
 
-        c.drawCircle(pad + ink.dp(3), ink.dp(19), ink.dp(3), ink.fill(ACCENT));
+        c.drawCircle(pad + ink.dp(3), header + ink.dp(3), ink.dp(3), ink.fill(ACCENT));
         ink.text("NEXT PRAYER", pad + ink.dp(13), header,
                 ink.label(), ink.dim, 0.18f, Paint.Align.LEFT);
 
-        String city = snapshot.place.name.toUpperCase(Locale.US);
-        // Leave the top-right clear for the live wall clock.
-        float cityRight = designW - pad - ink.dp(96);
-        float cityLeft = pad + ink.dp(100);
-        ink.text(ink.fit(city, ink.label(), Math.max(ink.dp(20), cityRight - cityLeft), 0.14f),
-                cityRight, header, ink.label(), ink.faint, 0.14f, Paint.Align.RIGHT);
+        // The wall clock is contextual, so it lives in the header at a smaller
+        // size. "NOW" makes it unmistakably different from the scheduled time.
+        Live nowSeconds = currentClock(ink, now, use24, designW - pad, header, 9.5f,
+                liveSeconds, scale, offsetX, offsetY, snapshot.place.zone(), ink.dim,
+                "NOW ");
 
-        Live nowSeconds = currentClock(ink, now, use24, designW - pad, header, 11f,
-                liveSeconds, scale, offsetX, offsetY);
+        // Secondary line: a shortened locality on the left, then the
+        // Gregorian date with the Hijri date in a quieter weight.
+        float dateStart = dateLineRight(ink, snapshot, designW - pad, metaBase, 9f, 8f);
+        float cityMax = Math.max(ink.dp(20), dateStart - pad - ink.dp(8));
+        String city = snapshot.place.shortName().toUpperCase(Locale.US);
+        ink.text(ink.fit(city, ink.label(8.5f), cityMax, 0.12f),
+                pad, metaBase, ink.label(8.5f), ink.faint, 0.12f, Paint.Align.LEFT);
 
         ink.text(snapshot.next.prayer.label.toUpperCase(Locale.US), pad, nameBase,
                 ink.display(22), ink.fg, 0.04f, Paint.Align.LEFT);
-        ink.text(ink.fit(meta(snapshot), ink.label(9.5f), designW - pad * 2, 0.04f),
-                pad, metaBase, ink.label(9.5f), ink.faint, 0.04f, Paint.Align.LEFT);
-        Live countdownSeconds = countdownLine(ink, snapshot, now, pad, countBase, 13f,
-                liveSeconds, scale, offsetX, offsetY);
 
-        float clockSize = 44;
+        float clockSize = 40f;
         String period = use24 ? "" : Format.meridiem(snapshot.next.local);
         String time = use24 ? Format.time24(snapshot.next.local)
                 : Format.time12(snapshot.next.local);
         float timeRight = designW - pad;
         if (!period.isEmpty()) {
-            Paint periodPaint = ink.label();
+            Paint periodPaint = ink.label(9f);
             float pw = ink.measure(period, periodPaint);
-            ink.text(period, designW - pad, clockBase - ink.dp(9), periodPaint, ink.faint,
+            ink.text(period, designW - pad, clockBase - ink.dp(8), periodPaint, ink.faint,
                     0.14f, Paint.Align.RIGHT);
             timeRight -= pw + ink.dp(6);
         }
         ink.text(time, timeRight, clockBase, ink.display(clockSize), ink.fg, -0.01f,
                 Paint.Align.RIGHT);
 
-        ink.progress(snapshot, now.toEpochMilli(), pad, divider, designW - pad);
+        // The countdown is attached to the scheduled time on the right edge,
+        // directly below it. The red "IN" is the only large accent in the hero.
+        Live countdownSeconds = countdownLine(ink, snapshot, now, designW - pad,
+                countBase, 12.5f, liveSeconds, scale, offsetX, offsetY, true);
 
-        Prayer[] prayers = Prayer.values();
-        float col = (designW - pad * 2) / 5f;
-        for (int i = 0; i < prayers.length; i++) {
-            float x = pad + col * i;
-            boolean active = prayers[i] == snapshot.next.prayer;
-            PrayerCalculator.Entry entry = snapshot.today.get(i);
-            // After Isha the next prayer is tomorrow's Fajr. Keep the strip
-            // useful by lighting its Fajr slot with that upcoming time. The
-            // meta line already shows tomorrow's date.
-            if (active && snapshot.nextIsTomorrow) entry = snapshot.next;
-            ink.text(prayers[i].label.toUpperCase(Locale.US), x, divider + ink.dp(16),
-                    ink.label(9), active ? ink.fg : ink.faint, 0.08f, Paint.Align.LEFT);
-            ink.text(use24 ? Format.time24(entry.local) : Format.time12(entry.local),
-                    x, divider + ink.dp(33), ink.display(14), active ? ink.fg : ink.inactive,
-                    0f, Paint.Align.LEFT);
+        if (full) {
+            float divider = ink.dp(104);
+            ink.rule(pad, divider, designW - pad);
+            Prayer[] prayers = Prayer.values();
+            float col = (designW - pad * 2) / 5f;
+            for (int i = 0; i < prayers.length; i++) {
+                float x = pad + col * i;
+                boolean active = prayers[i] == snapshot.next.prayer;
+                PrayerCalculator.Entry entry = snapshot.today.get(i);
+                // After Isha the next prayer is tomorrow's Fajr. Keep the strip
+                // useful by lighting its Fajr slot with that upcoming time.
+                if (active && snapshot.nextIsTomorrow) entry = snapshot.next;
+                ink.text(prayers[i].label.toUpperCase(Locale.US), x, ink.dp(118),
+                        ink.label(9), active ? ACCENT : ink.faint, 0.08f,
+                        Paint.Align.LEFT);
+                ink.text(use24 ? Format.time24(entry.local) : Format.time12(entry.local),
+                        x, ink.dp(136), ink.display(13),
+                        active ? ink.fg : ink.inactive, 0f, Paint.Align.LEFT);
+            }
         }
 
         c.restore();
@@ -189,37 +195,41 @@ public final class WidgetRenderer {
         c.translate(offsetX, offsetY);
         c.scale(scale, scale);
 
-        float pad = ink.dp(14);
-        float header = ink.dp(23);
-        float metaBase = designH - ink.dp(14);
-        float countBase = designH - ink.dp(32);
-        float clockBase = designH - ink.dp(56);
-        float nameBase = designH - ink.dp(100);
+        float pad = ink.dp(12);
+        float header = ink.dp(16);
 
-        c.drawCircle(pad + ink.dp(3), ink.dp(19), ink.dp(2.5f), ink.fill(ACCENT));
-        ink.text("NEXT", pad + ink.dp(10), header, ink.label(), ink.dim, 0.18f,
+        c.drawCircle(pad + ink.dp(2.5f), header + ink.dp(2.5f), ink.dp(2.5f),
+                ink.fill(ACCENT));
+        ink.text("NEXT", pad + ink.dp(9), header, ink.label(), ink.dim, 0.18f,
                 Paint.Align.LEFT);
 
-        Live nowSeconds = currentClock(ink, now, use24, designW - ink.dp(11), header, 9f,
-                liveSeconds, scale, offsetX, offsetY);
+        Live nowSeconds = currentClock(ink, now, use24, designW - pad, header, 8.5f,
+                liveSeconds, scale, offsetX, offsetY, snapshot.place.zone(), ink.dim,
+                "NOW ");
 
-        ink.text(snapshot.next.prayer.label.toUpperCase(Locale.US), pad, nameBase,
-                ink.display(19), ink.fg, 0.04f, Paint.Align.LEFT);
+        ink.text(snapshot.next.prayer.label.toUpperCase(Locale.US), pad, ink.dp(48),
+                ink.display(18), ink.fg, 0.04f, Paint.Align.LEFT);
 
         String period = use24 ? "" : Format.meridiem(snapshot.next.local);
         String time = use24 ? Format.time24(snapshot.next.local)
                 : Format.time12(snapshot.next.local);
-        Paint clock = ink.display(36);
-        ink.text(time, pad, clockBase, clock, ink.fg, -0.01f, Paint.Align.LEFT);
+        Paint clock = ink.display(34);
+        ink.text(time, pad, ink.dp(78), clock, ink.fg, -0.01f, Paint.Align.LEFT);
         if (!period.isEmpty()) {
-            ink.text(period, pad + ink.measure(time, clock) + ink.dp(5),
-                    clockBase - ink.dp(6), ink.label(), ink.faint, 0.14f, Paint.Align.LEFT);
+            ink.text(period, pad + ink.measure(time, clock) + ink.dp(4),
+                    ink.dp(72), ink.label(8f), ink.faint, 0.14f, Paint.Align.LEFT);
         }
 
-        Live countdownSeconds = countdownLine(ink, snapshot, now, pad, countBase, 11f,
-                liveSeconds, scale, offsetX, offsetY);
-        ink.text(ink.fit(smallMeta(snapshot), ink.label(8.5f), designW - pad * 2, 0.08f),
-                pad, metaBase, ink.label(8.5f), ink.faint, 0.08f, Paint.Align.LEFT);
+        Live countdownSeconds = countdownLine(ink, snapshot, now, pad, ink.dp(99), 10.5f,
+                liveSeconds, scale, offsetX, offsetY, false);
+
+        // Gregorian date first, then the quieter Hijri line; the shortened
+        // locality closes the card without competing with the prayer time.
+        dateLineLeft(ink, snapshot, pad, ink.dp(121), 7.5f, 7f,
+                designW - pad * 2);
+        String city = snapshot.place.shortName().toUpperCase(Locale.US);
+        ink.text(ink.fit(city, ink.label(8f), designW - pad * 2, 0.10f),
+                pad, ink.dp(136), ink.label(8f), ink.faint, 0.10f, Paint.Align.LEFT);
 
         c.restore();
         return new Card(ink.bitmap, nowSeconds, countdownSeconds);
@@ -233,25 +243,28 @@ public final class WidgetRenderer {
      */
     private static Live currentClock(Ink ink, Instant now, boolean use24, float right,
                                      float baseline, float sizeSp, boolean live,
-                                     float scale, float offsetX, float offsetY) {
-        ZonedDateTime local = now.atZone(ZoneId.systemDefault());
+                                     float scale, float offsetX, float offsetY,
+                                     ZoneId zone, int color, String lead) {
+        ZonedDateTime local = now.atZone(zone);
         Paint paint = ink.display(sizeSp);
         String clock = use24 ? Format.time24(local) : Format.time12(local);
         String suffix = use24 ? "" : " " + Format.meridiem(local);
+        String prefixLead = lead == null ? "" : lead;
 
         if (!live) {
-            ink.text(clock + suffix, right, baseline, paint, ink.fg, 0f,
+            ink.text(prefixLead + clock + suffix, right, baseline, paint, color, 0f,
                     Paint.Align.RIGHT);
             return null;
         }
 
-        String prefix = clock + ":";
+        String prefix = prefixLead + clock + ":";
         float cell = ink.dp(CELL_ADVANCE * sizeSp);
         float suffixWidth = suffix.isEmpty() ? 0f : paint.measureText(suffix);
         float secondsLeft = right - suffixWidth - cell * 2f;
-        ink.text(prefix, secondsLeft, baseline, paint, ink.fg, 0f, Paint.Align.RIGHT);
-        ink.text(suffix, right, baseline, paint, ink.fg, 0f, Paint.Align.RIGHT);
-        return live(ink, secondsLeft, baseline, sizeSp, true, scale, offsetX, offsetY);
+        ink.text(prefix, secondsLeft, baseline, paint, color, 0f, Paint.Align.RIGHT);
+        ink.text(suffix, right, baseline, paint, color, 0f, Paint.Align.RIGHT);
+        return live(ink, secondsLeft, baseline, sizeSp, true, scale, offsetX, offsetY,
+                color);
     }
 
     /**
@@ -260,22 +273,41 @@ public final class WidgetRenderer {
      * used instead, because the layout cannot be positioned reliably there.
      */
     private static Live countdownLine(Ink ink, PrayerClock.Snapshot snapshot, Instant now,
-                                      float left, float baseline, float sizeSp,
+                                      float edge, float baseline, float sizeSp,
                                       boolean live, float scale, float offsetX,
-                                      float offsetY) {
+                                      float offsetY, boolean alignRight) {
         long remaining = Math.max(0L, snapshot.next.instant.toEpochMilli()
                 - now.toEpochMilli());
-        Paint paint = ink.value(sizeSp);
+        long total = remaining / 1000L;
+        long hours = total / 3600L;
+        long minutes = (total % 3600L) / 60L;
+
+        Paint value = ink.value(sizeSp);
+        Paint label = ink.label(Math.max(8f, sizeSp * 0.68f));
+        String labelText = "IN";
+        String clock = String.format(Locale.US, "%02d:%02d", hours, minutes);
+        String clockPrefix = clock + ":";
+        float labelWidth = ink.trackedWidth(labelText, label, 0.12f);
+        float gap = ink.dp(4);
+        float valueWidth = value.measureText(clockPrefix);
+        float pairWidth = ink.dp(CELL_ADVANCE * 2f * sizeSp);
+        float totalWidth = labelWidth + gap + valueWidth + pairWidth;
+        float left = alignRight ? edge - totalWidth : edge;
+
         if (!live) {
-            ink.text(countdown(snapshot, now.toEpochMilli()), left, baseline, paint,
-                    ink.fg, 0.06f, Paint.Align.LEFT);
+            ink.text(labelText, left, baseline, label, ACCENT, 0.12f,
+                    Paint.Align.LEFT);
+            ink.text(clock, left + labelWidth + gap, baseline, value, ink.fg, 0f,
+                    Paint.Align.LEFT);
             return null;
         }
 
-        String prefix = countdownPrefix(remaining);
-        ink.text(prefix, left, baseline, paint, ink.fg, 0f, Paint.Align.LEFT);
-        float secondsLeft = left + paint.measureText(prefix);
-        return live(ink, secondsLeft, baseline, sizeSp, false, scale, offsetX, offsetY);
+        ink.text(labelText, left, baseline, label, ACCENT, 0.12f, Paint.Align.LEFT);
+        ink.text(clockPrefix, left + labelWidth + gap, baseline, value, ink.fg, 0f,
+                Paint.Align.LEFT);
+        float secondsLeft = left + labelWidth + gap + valueWidth;
+        return live(ink, secondsLeft, baseline, sizeSp, false, scale, offsetX, offsetY,
+                ink.fg);
     }
 
     /**
@@ -284,7 +316,8 @@ public final class WidgetRenderer {
      * the overlay stitches onto the bitmap without a visible seam.
      */
     private static Live live(Ink ink, float left, float baseline, float sizeSp,
-                             boolean bold, float scale, float offsetX, float offsetY) {
+                             boolean bold, float scale, float offsetX, float offsetY,
+                             int color) {
         // A pair vector is two adjacent 600-unit advances, so its logical
         // width is 1.2 em. The path viewports are 1200 x glyph height.
         float pairWidth = ink.dp(CELL_ADVANCE * 2f * sizeSp);
@@ -294,16 +327,7 @@ public final class WidgetRenderer {
         int topPx = Math.round(offsetY + (baseline - ink.dp(glyphTop)) * scale);
         int widthPx = Math.max(1, Math.round(pairWidth * scale));
         int heightPx = Math.max(1, Math.round(ink.dp(glyphHeight) * scale));
-        return new Live(leftPx, topPx, widthPx, heightPx);
-    }
-
-    private static String countdownPrefix(long remainingMs) {
-        long total = Math.max(0L, remainingMs) / 1000L;
-        long hours = total / 3600L;
-        long minutes = (total % 3600L) / 60L;
-        return hours > 0
-                ? String.format(Locale.US, "IN %d:%02d:", hours, minutes)
-                : String.format(Locale.US, "IN %d:", minutes);
+        return new Live(leftPx, topPx, widthPx, heightPx, color);
     }
 
     /** Short line used as the widget's accessibility description. */
@@ -330,20 +354,65 @@ public final class WidgetRenderer {
         return "IN <1M";
     }
 
-    private static String meta(PrayerClock.Snapshot snapshot) {
-        String date = DateTimeFormatter.ofPattern("EEE d MMM", Locale.US)
-                .format(snapshot.next.local).toUpperCase(Locale.US);
+    /**
+     * Draws the Gregorian date as the brighter part of the secondary line,
+     * followed by the quieter Hijri date. Returns the left edge so the caller
+     * can fit the location into the remaining width.
+     */
+    private static float dateLineRight(Ink ink, PrayerClock.Snapshot snapshot,
+                                       float right, float baseline,
+                                       float gregSize, float hijriSize) {
+        String greg = gregorian(snapshot);
         String hijri = hijri(snapshot);
-        // No TODAY / TOMORROW suffix: it ran under the hero time and made the
-        // line feel crowded. Tomorrow is already clear from the date itself.
-        return hijri.isEmpty() ? date : date + " \u00b7 " + hijri;
+        Paint gregPaint = ink.label(gregSize);
+        Paint hijriPaint = ink.label(hijriSize);
+        String secondary = hijri.isEmpty() ? "" : "\u00b7 " + hijri;
+        float gregWidth = ink.trackedWidth(greg, gregPaint, 0.08f);
+        float hijriWidth = secondary.isEmpty() ? 0f
+                : ink.trackedWidth(secondary, hijriPaint, 0.08f);
+        float gap = secondary.isEmpty() ? 0f : ink.dp(4);
+        float start = right - gregWidth - gap - hijriWidth;
+        ink.text(greg, start, baseline, gregPaint, ink.dim, 0.08f, Paint.Align.LEFT);
+        if (!secondary.isEmpty()) {
+            ink.text(secondary, start + gregWidth + gap, baseline, hijriPaint,
+                    ink.faint, 0.08f, Paint.Align.LEFT);
+        }
+        return start;
     }
 
-    private static String smallMeta(PrayerClock.Snapshot snapshot) {
+    /** Left-aligned variant used by the 2x2 widget. */
+    private static void dateLineLeft(Ink ink, PrayerClock.Snapshot snapshot,
+                                     float left, float baseline,
+                                     float gregSize, float hijriSize,
+                                     float available) {
+        String greg = gregorian(snapshot);
         String hijri = hijri(snapshot);
-        String city = snapshot.place.name.toUpperCase(Locale.US);
-        if (hijri.isEmpty()) return city;
-        return city + " \u00b7 " + hijri;
+        Paint gregPaint = ink.label(gregSize);
+        Paint hijriPaint = ink.label(hijriSize);
+        String secondary = hijri.isEmpty() ? "" : "\u00b7 " + hijri;
+        float gap = secondary.isEmpty() ? 0f : ink.dp(4);
+        float total = ink.trackedWidth(greg, gregPaint, 0.08f) + gap
+                + (secondary.isEmpty() ? 0f
+                : ink.trackedWidth(secondary, hijriPaint, 0.08f));
+        if (total > available) {
+            float factor = available / total;
+            gregPaint = ink.label(gregSize * factor);
+            hijriPaint = ink.label(hijriSize * factor);
+            total = ink.trackedWidth(greg, gregPaint, 0.08f) + gap
+                    + (secondary.isEmpty() ? 0f
+                    : ink.trackedWidth(secondary, hijriPaint, 0.08f));
+        }
+        ink.text(greg, left, baseline, gregPaint, ink.dim, 0.08f, Paint.Align.LEFT);
+        if (!secondary.isEmpty()) {
+            float gregWidth = ink.trackedWidth(greg, gregPaint, 0.08f);
+            ink.text(secondary, left + gregWidth + gap, baseline, hijriPaint,
+                    ink.faint, 0.08f, Paint.Align.LEFT);
+        }
+    }
+
+    private static String gregorian(PrayerClock.Snapshot snapshot) {
+        return DateTimeFormatter.ofPattern("EEE d MMM", Locale.US)
+                .format(snapshot.next.local).toUpperCase(Locale.US);
     }
 
     private static String hijri(PrayerClock.Snapshot snapshot) {
@@ -510,18 +579,9 @@ public final class WidgetRenderer {
                     + tracking * paint.getTextSize() * Math.max(0, s.length() - 1);
         }
 
-        void progress(PrayerClock.Snapshot snapshot, long nowMs, float left, float y,
-                      float right) {
-            Paint track = fill(hairline);
-            canvas.drawRect(left, y, right, y + Math.max(1f, dp(1)), track);
-
-            long from = snapshot.previous.instant.toEpochMilli();
-            long to = snapshot.next.instant.toEpochMilli();
-            float fraction = to <= from ? 0f
-                    : Math.max(0f, Math.min(1f, (nowMs - from) / (float) (to - from)));
-            Paint done = fill(ACCENT);
-            canvas.drawRect(left, y, left + (right - left) * fraction,
-                    y + Math.max(2f, dp(2)), done);
+        void rule(float left, float y, float right) {
+            Paint line = fill(hairline);
+            canvas.drawRect(left, y, right, y + Math.max(1f, dp(1)), line);
         }
 
     }

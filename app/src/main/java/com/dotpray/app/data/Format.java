@@ -30,6 +30,18 @@ public final class Format {
         return t.getHour() < 12 ? "AM" : "PM";
     }
 
+    /** Header wall clock, e.g. 18:26:16 or 6:26:16 PM. */
+    public static String clockWithSeconds(java.time.ZonedDateTime t, boolean use24) {
+        if (use24) {
+            return String.format(Locale.US, "%02d:%02d:%02d",
+                    t.getHour(), t.getMinute(), t.getSecond());
+        }
+        int h = t.getHour() % 12;
+        if (h == 0) h = 12;
+        return String.format(Locale.US, "%d:%02d:%02d %s",
+                h, t.getMinute(), t.getSecond(), meridiem(t));
+    }
+
     /** Countdown as HH:MM:SS */
     public static String duration(long millis) {
         long total = Math.max(0, millis / 1000L);

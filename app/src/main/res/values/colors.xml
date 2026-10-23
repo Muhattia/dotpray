@@ -10,7 +10,6 @@
     <color name="fg">#FF0A0A0A</color>
     <color name="fg_dim">#FF5E5E5E</color>
     <color name="fg_faint">#FF8A8A8A</color>
-    <color name="active_dim">#FF8A8A8A</color>
     <color name="fg_past">#FF9A9A9A</color>
     <color name="accent">#FFD71921</color>
     <color name="accent_dim">#FFB0141A</color>
@@ -20,7 +19,6 @@
     <color name="ripple_inverse">#33FFFFFF</color>
     <color name="dialog_bg">#FFFFFFFF</color>
     <color name="dialog_line">#FFE2E2E2</color>
-    <color name="track">#FFE2E2E2</color>
     <color name="dot_field">#FF000000</color>
     <color name="arc">#FF000000</color>
     <color name="transparent">#00000000</color>

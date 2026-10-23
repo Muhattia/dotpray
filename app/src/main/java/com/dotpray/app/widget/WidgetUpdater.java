@@ -20,7 +20,6 @@ import com.dotpray.app.prayer.CalcMethod;
 import com.dotpray.app.prayer.PrayerClock;
 
 import java.time.Instant;
-import java.time.ZoneId;
 
 /** Pushes the current prayer state into every placed widget. */
 public final class WidgetUpdater {
@@ -187,7 +186,7 @@ public final class WidgetUpdater {
             RemoteViews views = new RemoteViews(context.getPackageName(),
                     R.layout.widget_prayer);
             views.setImageViewBitmap(R.id.wCanvas, card.bitmap);
-            bindLiveDigits(context, themed, views, card.nowSeconds,
+            bindLiveDigits(views, card.nowSeconds,
                     card.countdownSeconds, snapshot, now, liveSeconds,
                     px[2] / (float) px[0], px[3] / (float) px[1]);
             views.setContentDescription(R.id.wCanvas,
@@ -216,7 +215,7 @@ public final class WidgetUpdater {
             RemoteViews views = new RemoteViews(context.getPackageName(),
                     R.layout.widget_prayer_small);
             views.setImageViewBitmap(R.id.wCanvas, card.bitmap);
-            bindLiveDigits(context, themed, views, card.nowSeconds,
+            bindLiveDigits(views, card.nowSeconds,
                     card.countdownSeconds, snapshot, now, liveSeconds,
                     px[2] / (float) px[0], px[3] / (float) px[1]);
             views.setContentDescription(R.id.wCanvas,
@@ -234,7 +233,7 @@ public final class WidgetUpdater {
      * <p>The countdown layout is in reverse value order (59, 58, ... 00), so a
      * normal forward flip is a decrement and wraps from 00 back to 59.
      */
-    private static void bindLiveDigits(Context context, Context themed, RemoteViews views,
+    private static void bindLiveDigits(RemoteViews views,
                                        WidgetRenderer.Live nowField,
                                        WidgetRenderer.Live countdownField,
                                        PrayerClock.Snapshot snapshot, Instant now,
@@ -246,15 +245,16 @@ public final class WidgetUpdater {
             return;
         }
 
-        int fg = themed.getColor(R.color.fg);
-        tint(views, NOW_SECONDS_IDS, fg);
-        tint(views, COUNTDOWN_SECONDS_IDS, fg);
+        // The wall clock is deliberately quieter than the countdown, so each
+        // flipper keeps the colour chosen by the renderer.
+        tint(views, NOW_SECONDS_IDS, nowField.color);
+        tint(views, COUNTDOWN_SECONDS_IDS, countdownField.color);
 
         // Round to the nearest second rather than truncating. The flipper's
         // timer starts when the host attaches it, so seeding the nearest value
         // keeps the first second within half a tick of wall time.
         int millis = (int) (now.toEpochMilli() % 1000L);
-        int second = now.atZone(ZoneId.systemDefault()).getSecond();
+        int second = now.atZone(snapshot.place.zone()).getSecond();
         if (millis >= 500) second = (second + 1) % 60;
         views.setDisplayedChild(R.id.wNowSeconds, second);
 

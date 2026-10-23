@@ -20,7 +20,7 @@ No ads, no tracking, no AndroidX. The app has no `INTERNET` permission.
 (`tools/render_preview.py`), not screenshots. The app and both widgets share
 the in-app System / Light / Dark choice.*
 
-*Version 1.7 — cleaner widget hero, dotted live seconds and Umm al-Qura dates.*
+*Version 1.8 — rebalanced hierarchy, compact headers and clearer next-prayer focus.*
 
 ---
 
@@ -59,7 +59,7 @@ build it locally with `./build.sh`:
 
 ```bash
 ./build.sh
-adb install -r dist/dotpray-1.7.apk
+adb install -r dist/dotpray-1.8.apk
 ```
 
 Or copy the built APK to the phone and open it (you will need to allow
@@ -80,7 +80,7 @@ it for you.
 The moving seconds in the wall clock and next-prayer countdown are Doto glyph
 vectors inside `ViewFlipper`s. The launcher advances those tiny views itself,
 so the seconds stay live even when the app is not running, without a service or
-a per-second alarm. The bitmap (next prayer, Hijri date, progress, prayer strip)
+a per-second alarm. The bitmap (next prayer, dates, header and prayer strip)
 still redraws on every minute boundary (a non-wakeup `RTC` alarm, exact when the
 OS allows it and `setAndAllowWhileIdle` otherwise), immediately when the device
 is unlocked, on every prayer boundary, on resize, on boot, whenever the clock
@@ -114,7 +114,7 @@ Requirements:
 | Build tools | `37.0.0` |
 | minSdk / targetSdk | 26 / 35 |
 
-Output: `dist/dotpray-1.7.apk`, signed with a debug key that is generated on
+Output: `dist/dotpray-1.8.apk`, signed with a debug key that is generated on
 first run at `keystore/dotpray.keystore` (outside `build/`, so rebuilds keep the
 same certificate and new versions install over old ones).
 
@@ -194,7 +194,7 @@ dotpray/
 │   │   ├── Api30.java           the only API-30 specific code
 │   │   ├── Perm.java            POST_NOTIFICATIONS literal (API 33+)
 │   │   ├── prayer/              PrayerCalculator, PrayerClock, Hijri, Qibla, fixed method
-│   │   ├── ui/                  DotFieldView, PulseDotView, ProgressLineView, GlyphArcView
+│   │   ├── ui/                  DotFieldView, PulseDotView, GlyphArcView
 │   │   ├── widget/              providers, WidgetUpdater, WidgetRenderer, WidgetTick
 │   │   ├── alerts/              AlarmManager scheduling + notifications
 │   │   └── data/                Place, LocalityResolver, PrayerPrefs, ThemeController, Format
@@ -204,7 +204,7 @@ dotpray/
 │   ├── gen_live_digits.py       traces Doto digits into widget vector drawables
 │   ├── make_icons.py            regenerates launcher icons from the SVG
 │   └── render_preview.py        renders preview/*.png from the real layouts
-└── dist/dotpray-1.7.apk
+└── dist/dotpray-1.8.apk
 ```
 
 ### Design details
@@ -225,10 +225,12 @@ dotpray/
 * **The widget is mostly a drawing.** `widget/WidgetRenderer.java` composes
   the static card on a `Canvas` at the exact pixel size the launcher reports
   and pushes it with `setImageViewBitmap`. The composition is authored once in
-  a 326 × 150 dp (wide) or 150 × 150 dp (compact) space and scaled uniformly,
-  so resizing can never make the lines collide. The whole card is one click
-  target (`wRoot`); settings live only in the app's bottom button. This is what
-  guarantees Doto on One UI, where `@font` inside `RemoteViews` is ignored.
+  a 326 × 150 dp (wide) or 150 × 150 dp (compact) space and scaled uniformly.
+  A shorter wide resize drops the prayer strip rather than shrinking the
+  focal next-prayer block; no composition can collide when scaled. The whole
+  card is one click target (`wRoot`); settings live only in the app's bottom
+  button. This is what guarantees Doto on One UI, where `@font` inside
+  `RemoteViews` is ignored.
   The seconds are Doto glyph vectors flipped by the launcher; the rest of the
   clock and countdown is painted into the same bitmap and refreshed on the
   minute boundary. That keeps the seconds moving in Doto without a background

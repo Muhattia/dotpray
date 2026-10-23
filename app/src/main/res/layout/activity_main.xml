@@ -28,11 +28,11 @@
             android:paddingEnd="22dp"
             android:paddingBottom="40dp">
 
-            <!-- ── top bar ───────────────────────────────────────────── -->
+            <!-- ── brand + current time ─────────────────────────────── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
+                android:gravity="bottom"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -42,65 +42,111 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:ellipsize="end"
                         android:letterSpacing="0.05"
+                        android:maxLines="1"
+                        android:singleLine="true"
                         android:text="DOTPRAY"
                         android:textSize="26sp"
                         style="@style/DisplayBlack" />
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="7dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:singleLine="true"
                         android:text="@string/tagline"
                         style="@style/LabelFaint" />
                 </LinearLayout>
 
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:gravity="end"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="NOW"
+                        style="@style/LabelFaint" />
+
+                    <TextView
+                        android:id="@+id/clockValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:autoSizeMaxTextSize="12sp"
+                        android:autoSizeMinTextSize="9sp"
+                        android:autoSizeStepGranularity="0.5sp"
+                        android:autoSizeTextType="uniform"
+                        android:gravity="end"
+                        android:letterSpacing="0.04"
+                        android:maxLines="1"
+                        android:maxWidth="140dp"
+                        android:text="06:26:16 PM"
+                        android:textColor="@color/fg_dim"
+                        android:textSize="12sp"
+                        style="@style/Value" />
+                </LinearLayout>
             </LinearLayout>
 
-            <!-- ── city + date ───────────────────────────────────────── -->
+            <!-- ── location + date ───────────────────────────────────── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:gravity="center_vertical"
+                android:layout_marginTop="16dp"
+                android:gravity="bottom"
                 android:orientation="horizontal">
-
-                <LinearLayout
-                    android:id="@+id/cityButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_pill_outline"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="12dp"
-                    android:paddingTop="8dp"
-                    android:paddingEnd="14dp"
-                    android:paddingBottom="8dp"
-                    android:stateListAnimator="@null">
-
-                    <View
-                        android:layout_width="6dp"
-                        android:layout_height="6dp"
-                        android:background="@drawable/bg_dot" />
-
-                    <TextView
-                        android:id="@+id/cityLabel"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:ellipsize="end"
-                        android:maxWidth="190dp"
-                        android:singleLine="true"
-                        android:text="CAIRO"
-                        style="@style/LabelStrong" />
-                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:gravity="start"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/cityButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_pill_outline"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="12dp"
+                        android:paddingTop="8dp"
+                        android:paddingEnd="14dp"
+                        android:paddingBottom="8dp"
+                        android:stateListAnimator="@null">
+
+                        <View
+                            android:layout_width="6dp"
+                            android:layout_height="6dp"
+                            android:background="@drawable/bg_dot" />
+
+                        <TextView
+                            android:id="@+id/cityLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:singleLine="true"
+                            android:text="CAIRO"
+                            style="@style/LabelStrong" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
                     android:gravity="end"
                     android:orientation="vertical">
 
@@ -108,6 +154,14 @@
                         android:id="@+id/dateLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:autoSizeMaxTextSize="10sp"
+                        android:autoSizeMinTextSize="7sp"
+                        android:autoSizeStepGranularity="0.5sp"
+                        android:autoSizeTextType="uniform"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:maxWidth="190dp"
+                        android:singleLine="true"
                         android:gravity="end"
                         android:text="THU / 22 OCT 2026"
                         style="@style/Label" />
@@ -117,18 +171,37 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
+                        android:autoSizeMaxTextSize="9sp"
+                        android:autoSizeMinTextSize="6.5sp"
+                        android:autoSizeStepGranularity="0.5sp"
+                        android:autoSizeTextType="uniform"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:maxWidth="190dp"
+                        android:singleLine="true"
                         android:gravity="end"
                         android:text="11 JUMADA I 1448"
                         style="@style/LabelFaint" />
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- ── hero ──────────────────────────────────────────────── -->
+            <TextView
+                android:id="@+id/locationDetail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:text="CAIRO, EG · 30.044°N / 31.236°E"
+                style="@style/LabelFaint" />
+
+            <!-- ── next prayer ───────────────────────────────────────── -->
             <FrameLayout
                 android:id="@+id/heroCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
+                android:layout_marginTop="16dp"
                 android:background="@drawable/bg_card"
                 android:paddingStart="20dp"
                 android:paddingTop="18dp"
@@ -136,10 +209,10 @@
                 android:paddingBottom="18dp">
 
                 <com.dotpray.app.ui.GlyphArcView
-                    android:layout_width="170dp"
-                    android:layout_height="170dp"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
                     android:layout_gravity="top|end"
-                    android:alpha="0.9" />
+                    android:alpha="0.55" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -173,83 +246,59 @@
                             style="@style/LabelFaint" />
                     </LinearLayout>
 
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/nextName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:gravity="bottom"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/nextName"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="MAGHRIB"
-                            android:textSize="30sp"
-                            style="@style/Display" />
-
-                    </LinearLayout>
+                        android:layout_marginTop="14dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:singleLine="true"
+                        android:text="MAGHRIB"
+                        android:textSize="30sp"
+                        style="@style/Display" />
 
                     <TextView
                         android:id="@+id/nextTime"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
+                        android:autoSizeMaxTextSize="82sp"
+                        android:autoSizeMinTextSize="36sp"
+                        android:autoSizeStepGranularity="2sp"
+                        android:autoSizeTextType="uniform"
+                        android:ellipsize="end"
+                        android:gravity="start"
                         android:letterSpacing="-0.01"
+                        android:maxLines="1"
+                        android:singleLine="true"
                         android:text="18:42"
-                        android:textSize="84sp"
+                        android:textSize="82sp"
                         style="@style/Display" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
+                        android:layout_marginTop="8dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="NEXT IN"
-                            style="@style/LabelFaint" />
+                            android:text="IN"
+                            android:textColor="@color/accent"
+                            style="@style/Label" />
 
                         <TextView
                             android:id="@+id/countdownValue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="10dp"
-                            android:text="02:14:32"
+                            android:layout_marginStart="8dp"
+                            android:text="01:25:12"
                             android:textColor="@color/fg"
-                            android:textSize="15sp"
+                            android:textSize="22sp"
                             style="@style/Value" />
-                    </LinearLayout>
-
-                    <com.dotpray.app.ui.ProgressLineView
-                        android:id="@+id/progress"
-                        android:layout_width="match_parent"
-                        android:layout_height="6dp"
-                        android:layout_marginTop="18dp" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/sinceLabel"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="SINCE ASR 15:31"
-                            style="@style/LabelFaint" />
-
-                        <TextView
-                            android:id="@+id/progressLabel"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="42% ELAPSED"
-                            style="@style/LabelFaint" />
                     </LinearLayout>
                 </LinearLayout>
             </FrameLayout>
@@ -258,7 +307,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="26dp"
+                android:layout_marginTop="24dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -310,34 +359,46 @@
 
                 <TextView
                     android:id="@+id/locationValue"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="11dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:singleLine="true"
                     android:text="CAIRO, EG"
                     android:textSize="15sp"
                     style="@style/Value" />
 
                 <TextView
                     android:id="@+id/locationCoords"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="7dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:singleLine="true"
                     android:text="30.044°N / 31.236°E"
                     style="@style/LabelFaint" />
 
                 <TextView
                     android:id="@+id/qiblaValue"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:singleLine="true"
                     android:text="QIBLA 137° SE"
                     style="@style/LabelFaint" />
 
                 <TextView
                     android:id="@+id/locationHint"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:singleLine="true"
                     android:text="TAP TO REFRESH"
                     android:textColor="@color/accent"
                     style="@style/Label" />
@@ -387,7 +448,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:gravity="center"
-                android:text="DOTPRAY 1.1 · DOTO (OFL)"
+                android:text="DOTPRAY 1.8 · DOTO (OFL)"
                 style="@style/LabelFaint" />
         </LinearLayout>
     </ScrollView>

@@ -33,20 +33,21 @@ import com.dotpray.app.data.Place;
 import com.dotpray.app.data.PrayerPrefs;
 import com.dotpray.app.data.ThemeController;
 import com.dotpray.app.prayer.CalcMethod;
+import com.dotpray.app.prayer.Hijri;
 import com.dotpray.app.prayer.Prayer;
 import com.dotpray.app.prayer.PrayerCalculator;
 import com.dotpray.app.prayer.PrayerClock;
 import com.dotpray.app.prayer.Qibla;
 import com.dotpray.app.ui.DotFieldView;
-import com.dotpray.app.ui.ProgressLineView;
 import com.dotpray.app.ui.SettingsDialog;
 import com.dotpray.app.widget.PrayerWidgetProvider;
 import com.dotpray.app.widget.SmallPrayerWidgetProvider;
 import com.dotpray.app.widget.WidgetUpdater;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
-import com.dotpray.app.prayer.Hijri;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
@@ -67,21 +68,20 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
     private ScrollView scroll;
     private DotFieldView dotField;
     private TextView cityLabel;
+    private TextView locationDetail;
     private TextView dateLabel;
     private TextView hijriLabel;
+    private TextView clockValue;
     private TextView heroIndex;
     private TextView nextName;
     private TextView nextTime;
     private TextView countdownValue;
-    private TextView sinceLabel;
-    private TextView progressLabel;
     private TextView clockTag;
     private TextView locationValue;
     private TextView locationCoords;
     private TextView qiblaValue;
     private TextView locationHint;
     private LinearLayout prayerList;
-    private ProgressLineView progress;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Runnable ticker;
@@ -154,21 +154,20 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
         scroll = findViewById(R.id.scroll);
         dotField = findViewById(R.id.dotField);
         cityLabel = findViewById(R.id.cityLabel);
+        locationDetail = findViewById(R.id.locationDetail);
         dateLabel = findViewById(R.id.dateLabel);
         hijriLabel = findViewById(R.id.hijriLabel);
+        clockValue = findViewById(R.id.clockValue);
         heroIndex = findViewById(R.id.heroIndex);
         nextName = findViewById(R.id.nextName);
         nextTime = findViewById(R.id.nextTime);
         countdownValue = findViewById(R.id.countdownValue);
-        sinceLabel = findViewById(R.id.sinceLabel);
-        progressLabel = findViewById(R.id.progressLabel);
         clockTag = findViewById(R.id.clockTag);
         locationValue = findViewById(R.id.locationValue);
         locationCoords = findViewById(R.id.locationCoords);
         qiblaValue = findViewById(R.id.qiblaValue);
         locationHint = findViewById(R.id.locationHint);
         prayerList = findViewById(R.id.prayerList);
-        progress = findViewById(R.id.progress);
     }
 
     private void wireInteractions() {
@@ -211,21 +210,19 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
         Place place = snapshot.place;
         boolean use24 = prefs.is24Hour();
 
-        cityLabel.setText(place.name.toUpperCase(Locale.US));
+        cityLabel.setText(place.shortName().toUpperCase(Locale.US));
+        locationDetail.setText((place.label() + " \u00b7 " + place.coordinates())
+                .toUpperCase(Locale.US));
         dateLabel.setText(DateTimeFormatter.ofPattern("EEE / dd MMM yyyy", Locale.US)
                 .format(snapshot.date).toUpperCase(Locale.US));
         hijriLabel.setText(hijri(snapshot.date));
         clockTag.setText(use24 ? "24H" : "12H");
+        updateClock();
 
         heroIndex.setText(String.format(Locale.US, "%02d / 05",
                 snapshot.next.prayer.ordinal() + 1));
         nextName.setText(snapshot.next.prayer.label.toUpperCase(Locale.US));
         nextTime.setText(timeText(snapshot.next.local, use24, 0.28f));
-
-        sinceLabel.setText("SINCE " + snapshot.previous.prayer.label.toUpperCase(Locale.US)
-                + " " + (use24
-                ? Format.time24(snapshot.previous.local)
-                : Format.time12(snapshot.previous.local)));
 
         locationValue.setText(place.label().toUpperCase(Locale.US));
         locationCoords.setText(place.coordinates());
@@ -279,6 +276,7 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
     private void addPrayerRow(PrayerCalculator.Entry entry, int indexNumber,
                               boolean active, boolean past, int bottomMargin) {
         View row = LayoutInflater.from(this).inflate(R.layout.item_prayer, prayerList, false);
+        View marker = row.findViewById(R.id.pMarker);
         TextView index = row.findViewById(R.id.pIndex);
         TextView name = row.findViewById(R.id.pName);
         TextView time = row.findViewById(R.id.pTime);
@@ -293,16 +291,23 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
                 : R.drawable.bg_option);
 
         if (active) {
-            name.setTextColor(getColor(R.color.bg));
-            time.setTextColor(getColor(R.color.bg));
-            index.setTextColor(getColor(R.color.active_dim));
+            // A small dot and the NEXT label carry the state; the row keeps the
+            // same surface as the rest of the schedule so the red accent stays
+            // an indicator rather than a large block of colour.
+            marker.setVisibility(View.VISIBLE);
+            name.setTextColor(getColor(R.color.fg));
+            time.setTextColor(getColor(R.color.fg));
+            index.setTextColor(getColor(R.color.accent));
             status.setVisibility(View.VISIBLE);
             status.setText("NEXT");
         } else {
+            marker.setVisibility(View.INVISIBLE);
             name.setTextColor(getColor(past ? R.color.fg_past : R.color.fg));
             time.setTextColor(getColor(past ? R.color.fg_past : R.color.fg));
             index.setTextColor(getColor(R.color.fg_faint));
-            status.setVisibility(View.GONE);
+            // Keep the status line's height reserved so every schedule row is
+            // the same height; only its ink changes with the active state.
+            status.setVisibility(View.INVISIBLE);
         }
 
         LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) row.getLayoutParams();
@@ -311,20 +316,16 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
         prayerList.addView(row);
     }
 
+    private void updateClock() {
+        ZonedDateTime now = Instant.now().atZone(snapshot.place.zone());
+        clockValue.setText(Format.clockWithSeconds(now, prefs.is24Hour()));
+    }
+
     private void updateCountdown() {
         long remaining = snapshot.next.instant.toEpochMilli() - System.currentTimeMillis();
         if (remaining < 0) remaining = 0;
-        // The static label beside this value already says "NEXT IN".
+        // The red "IN" beside this value already labels the countdown.
         countdownValue.setText(Format.duration(remaining));
-
-        long from = snapshot.previous.instant.toEpochMilli();
-        long to = snapshot.next.instant.toEpochMilli();
-        float fraction = to > from
-                ? (float) (System.currentTimeMillis() - from) / (float) (to - from)
-                : 0f;
-        progress.setProgress(fraction);
-        progressLabel.setText(String.format(Locale.US, "%d%% ELAPSED",
-                Math.round(fraction * 100)));
     }
 
     private CharSequence timeText(java.time.ZonedDateTime time, boolean use24, float periodScale) {
@@ -369,10 +370,13 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
             @Override
             public void run() {
                 if (snapshot != null) {
-                    long remaining = snapshot.next.instant.toEpochMilli() - System.currentTimeMillis();
-                    if (remaining <= 0) {
+                    LocalDate today = Instant.now().atZone(snapshot.place.zone()).toLocalDate();
+                    long remaining = snapshot.next.instant.toEpochMilli()
+                            - System.currentTimeMillis();
+                    if (remaining <= 0 || !today.equals(snapshot.date)) {
                         refresh();
                     } else {
+                        updateClock();
                         updateCountdown();
                     }
                 }

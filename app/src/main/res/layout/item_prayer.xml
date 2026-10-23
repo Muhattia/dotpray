@@ -5,38 +5,44 @@
     android:background="@drawable/bg_option"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingStart="16dp"
-    android:paddingTop="13dp"
+    android:paddingStart="12dp"
+    android:paddingTop="11dp"
     android:paddingEnd="16dp"
-    android:paddingBottom="13dp">
+    android:paddingBottom="11dp">
+
+    <View
+        android:id="@+id/pMarker"
+        android:layout_width="6dp"
+        android:layout_height="6dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_dot"
+        android:visibility="invisible" />
 
     <TextView
         android:id="@+id/pIndex"
-        android:layout_width="26dp"
+        android:layout_width="22dp"
         android:layout_height="wrap_content"
         android:text="01"
         style="@style/LabelFaint" />
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/pName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:layout_weight="1"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/pName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:letterSpacing="0.04"
-            android:text="FAJR"
-            android:textSize="18sp"
-            style="@style/Display" />
-
-    </LinearLayout>
+        android:ellipsize="end"
+        android:letterSpacing="0.04"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:text="FAJR"
+        android:textSize="18sp"
+        style="@style/Display" />
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
         android:gravity="end"
         android:orientation="vertical">
 
@@ -46,6 +52,8 @@
             android:layout_height="wrap_content"
             android:gravity="end"
             android:letterSpacing="0.01"
+            android:maxLines="1"
+            android:singleLine="true"
             android:text="05:12"
             android:textSize="24sp"
             style="@style/Display" />
@@ -55,11 +63,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:layout_marginTop="3dp"
+            android:layout_marginTop="2dp"
             android:text="NEXT"
             android:textColor="@color/accent"
             android:textSize="9sp"
-            android:visibility="gone"
+            android:visibility="invisible"
             style="@style/Label" />
     </LinearLayout>
 </LinearLayout>
