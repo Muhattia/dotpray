@@ -2,10 +2,13 @@
 <!--
   The card artwork is drawn by WidgetRenderer into a bitmap: RemoteViews cannot
   carry the Doto Typeface, so laying the whole widget out with TextViews would
-  lose the dot-matrix look.  The moving seconds are Doto glyph-pair vectors in
-  one-second ViewFlippers: the launcher advances them itself, without waking
-  the app process.  A single 60-child flipper per field (rather than separate
-  tens and units) keeps the count in phase and wraps 59 -> 00 correctly.
+  lose the dot-matrix look.  The wide composition is a two-column hero: next
+  prayer on the left; location, wall clock and dates on the right; the five
+  prayer times across the bottom.  The moving seconds are Doto glyph-pair
+  vectors in one-second ViewFlippers: the launcher advances them itself,
+  without waking the app process.  A single 60-child flipper per field (rather
+  than separate tens and units) keeps the count in phase and wraps 59 -> 00
+  correctly.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/wRoot"

@@ -41,6 +41,7 @@ import com.dotpray.app.prayer.PrayerCalculator;
 import com.dotpray.app.prayer.PrayerClock;
 import com.dotpray.app.prayer.Qibla;
 import com.dotpray.app.ui.DotFieldView;
+import com.dotpray.app.ui.ProgressLineView;
 import com.dotpray.app.ui.SettingsDialog;
 import com.dotpray.app.widget.PrayerWidgetProvider;
 import com.dotpray.app.widget.SmallPrayerWidgetProvider;
@@ -78,6 +79,9 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
     private TextView nextName;
     private TextView nextTime;
     private TextView countdownValue;
+    private TextView sinceLabel;
+    private TextView progressLabel;
+    private ProgressLineView progress;
     private TextView clockTag;
     private TextView locationValue;
     private TextView locationCoords;
@@ -164,6 +168,9 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
         nextName = findViewById(R.id.nextName);
         nextTime = findViewById(R.id.nextTime);
         countdownValue = findViewById(R.id.countdownValue);
+        sinceLabel = findViewById(R.id.sinceLabel);
+        progressLabel = findViewById(R.id.progressLabel);
+        progress = findViewById(R.id.progress);
         clockTag = findViewById(R.id.clockTag);
         locationValue = findViewById(R.id.locationValue);
         locationCoords = findViewById(R.id.locationCoords);
@@ -225,6 +232,12 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
                 snapshot.next.prayer.ordinal() + 1));
         nextName.setText(snapshot.next.prayer.label.toUpperCase(Locale.US));
         nextTime.setText(timeText(snapshot.next.local, use24, 0.28f));
+
+        String sinceTime = use24 ? Format.time24(snapshot.previous.local)
+                : Format.time12(snapshot.previous.local) + " "
+                + Format.meridiem(snapshot.previous.local);
+        sinceLabel.setText("SINCE "
+                + snapshot.previous.prayer.label.toUpperCase(Locale.US) + " " + sinceTime);
 
         locationValue.setText(place.label().toUpperCase(Locale.US));
         locationCoords.setText(place.coordinates());
@@ -324,10 +337,16 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
     }
 
     private void updateCountdown() {
-        long remaining = snapshot.next.instant.toEpochMilli() - System.currentTimeMillis();
+        long nowMs = System.currentTimeMillis();
+        long remaining = snapshot.next.instant.toEpochMilli() - nowMs;
         if (remaining < 0) remaining = 0;
         // The red "IN" beside this value already labels the countdown.
         countdownValue.setText(Format.duration(remaining));
+
+        float fraction = snapshot.progress(nowMs);
+        progress.setProgress(fraction);
+        progressLabel.setText(String.format(Locale.US, "%d%% ELAPSED",
+                Math.round(fraction * 100f)));
     }
 
     private CharSequence timeText(java.time.ZonedDateTime time, boolean use24, float periodScale) {

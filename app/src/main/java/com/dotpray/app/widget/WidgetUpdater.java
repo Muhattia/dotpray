@@ -238,7 +238,7 @@ public final class WidgetUpdater {
                                        WidgetRenderer.Live countdownField,
                                        PrayerClock.Snapshot snapshot, Instant now,
                                        boolean live, float scaleX, float scaleY) {
-        if (!live || nowField == null || countdownField == null) {
+        if (!live || (nowField == null && countdownField == null)) {
             for (int id : LIVE_FLIPPERS) {
                 views.setViewVisibility(id, View.GONE);
             }
@@ -246,28 +246,33 @@ public final class WidgetUpdater {
         }
 
         // The wall clock is deliberately quieter than the countdown, so each
-        // flipper keeps the colour chosen by the renderer.
-        tint(views, NOW_SECONDS_IDS, nowField.color);
-        tint(views, COUNTDOWN_SECONDS_IDS, countdownField.color);
+        // flipper keeps the colour chosen by the renderer. The 2x2 card has no
+        // wall clock, so either field may be absent.
+        if (nowField != null) {
+            tint(views, NOW_SECONDS_IDS, nowField.color);
+            // Round to the nearest second rather than truncating. The flipper's
+            // timer starts when the host attaches it, so seeding the nearest value
+            // keeps the first second within half a tick of wall time.
+            int millis = (int) (now.toEpochMilli() % 1000L);
+            int second = now.atZone(snapshot.place.zone()).getSecond();
+            if (millis >= 500) second = (second + 1) % 60;
+            views.setDisplayedChild(R.id.wNowSeconds, second);
+            place(views, R.id.wNowSeconds, nowField, scaleX, scaleY);
+            views.setViewVisibility(R.id.wNowSeconds, View.VISIBLE);
+        } else {
+            views.setViewVisibility(R.id.wNowSeconds, View.GONE);
+        }
 
-        // Round to the nearest second rather than truncating. The flipper's
-        // timer starts when the host attaches it, so seeding the nearest value
-        // keeps the first second within half a tick of wall time.
-        int millis = (int) (now.toEpochMilli() % 1000L);
-        int second = now.atZone(snapshot.place.zone()).getSecond();
-        if (millis >= 500) second = (second + 1) % 60;
-        views.setDisplayedChild(R.id.wNowSeconds, second);
-
-        long remainingMillis = Math.max(0L, snapshot.next.instant.toEpochMilli()
-                - now.toEpochMilli());
-        int countdownSecond = (int) (((remainingMillis + 500L) / 1000L) % 60L);
-        views.setDisplayedChild(R.id.wCountdownSeconds, 59 - countdownSecond);
-
-        place(views, R.id.wNowSeconds, nowField, scaleX, scaleY);
-        place(views, R.id.wCountdownSeconds, countdownField, scaleX, scaleY);
-
-        for (int id : LIVE_FLIPPERS) {
-            views.setViewVisibility(id, View.VISIBLE);
+        if (countdownField != null) {
+            tint(views, COUNTDOWN_SECONDS_IDS, countdownField.color);
+            long remainingMillis = Math.max(0L, snapshot.next.instant.toEpochMilli()
+                    - now.toEpochMilli());
+            int countdownSecond = (int) (((remainingMillis + 500L) / 1000L) % 60L);
+            views.setDisplayedChild(R.id.wCountdownSeconds, 59 - countdownSecond);
+            place(views, R.id.wCountdownSeconds, countdownField, scaleX, scaleY);
+            views.setViewVisibility(R.id.wCountdownSeconds, View.VISIBLE);
+        } else {
+            views.setViewVisibility(R.id.wCountdownSeconds, View.GONE);
         }
     }
 

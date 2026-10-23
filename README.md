@@ -59,7 +59,7 @@ build it locally with `./build.sh`:
 
 ```bash
 ./build.sh
-adb install -r dist/dotpray-1.10.apk
+adb install -r dist/dotpray-1.11.apk
 ```
 
 Or copy the built APK to the phone and open it (you will need to allow
@@ -123,7 +123,7 @@ Requirements:
 | Build tools | `37.0.0` |
 | minSdk / targetSdk | 26 / 35 |
 
-Output: `dist/dotpray-1.10.apk`, signed with a debug key that is generated on
+Output: `dist/dotpray-1.11.apk`, signed with a debug key that is generated on
 first run at `keystore/dotpray.keystore` (outside `build/`, so rebuilds keep the
 same certificate and new versions install over old ones).
 
@@ -213,7 +213,7 @@ dotpray/
 │   ├── gen_live_digits.py       traces Doto digits into widget vector drawables
 │   ├── make_icons.py            regenerates launcher icons from the SVG
 │   └── render_preview.py        renders preview/*.png from the real layouts
-└── dist/dotpray-1.10.apk
+└── dist/dotpray-1.11.apk
 ```
 
 ### Design details
@@ -221,9 +221,11 @@ dotpray/
 * **App icon.** The coloured red circular mark is
   `design/dotpray-icon.svg`; the monochrome sujood silhouette is
   `design/dotpray-notification.svg`, vectorised as
-  `drawable/ic_notification.xml` for the status bar. `tools/make_icons.py`
-  regenerates every launcher PNG, the adaptive foreground and the coloured
-  notification large icon with `rsvg-convert` and Pillow.
+  `drawable/ic_notification.xml` for the status bar. Both sources use a square
+  view box and centre the mark, so the legacy, round, adaptive and
+  notification-large renders share the same optical centre.
+  `tools/make_icons.py` regenerates every launcher PNG, the adaptive foreground
+  and the coloured notification large icon with `rsvg-convert` and Pillow.
 * **Typeface.** Everything is set in
   [Doto](https://fonts.google.com/specimen/Doto) (SIL Open Font License 1.1),
   instanced to static regular/bold/black weights; there is no system font
@@ -232,21 +234,32 @@ dotpray/
 * **Dot matrix.** `DotFieldView` paints a faint 22 dp dot grid behind every
   screen; `GlyphArcView` draws the dotted arc in the hero card; `PulseDotView`
   animates the red "next prayer" dot.
+* **Next-prayer progress.** `PrayerClock.Snapshot.progress()` maps the interval
+  from the previous prayer to the next into 0..1 without changing any
+  calculated time. The app hero uses `ProgressLineView` plus a `SINCE <prayer>`
+  and `% ELAPSED` caption; the wide widget turns its schedule divider into the
+  same rail, and the shorter wide resize keeps a rail at the bottom. The app
+  advances it every second; the widget advances it on its minute refresh.
 * **The widget is mostly a drawing.** `widget/WidgetRenderer.java` composes
   the static card on a `Canvas` at the exact pixel size the launcher reports
   and pushes it with `setImageViewBitmap`. The composition is authored once in
   a 326 × 150 dp (wide) or 150 × 150 dp (compact) space and scaled uniformly.
-  A shorter wide resize drops the prayer strip rather than shrinking the
-  focal next-prayer block; no composition can collide when scaled. The whole
-  card is one click target (`wRoot`); settings live only in the app's bottom
+  The 2x2 card is one centred name/time/countdown stack. The wide card uses a
+  two-column hero: next prayer on the left; location, wall clock and dates on
+  the right; the five-prayer strip across the bottom. A shorter wide resize
+  drops the prayer strip and date lines rather than shrinking the focal
+  next-prayer block; no composition can collide when scaled. The whole card
+  is one click target (`wRoot`); settings live only in the app's bottom
   button. This is what guarantees Doto on One UI, where `@font` inside
   `RemoteViews` is ignored.
   The seconds are Doto glyph vectors flipped by the launcher; the rest of the
   clock and countdown is painted into the same bitmap and refreshed on the
   minute boundary. That keeps the seconds moving in Doto without a background
   service or a second-by-second alarm.
-* **Notifications** use `AlarmManager.setAndAllowWhileIdle`, so no
-  `SCHEDULE_EXACT_ALARM` permission is needed and the app works on Android 12+.
+* **Notifications** use an exact alarm at the prayer instant when the platform
+  allows it, with `AlarmManager.setAndAllowWhileIdle` as the fallback. The
+  alert and the widget refresh are separate alarms, so a widget tick cannot
+  cancel a pending prayer alert.
 
 ---
 

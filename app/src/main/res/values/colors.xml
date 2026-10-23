@@ -21,5 +21,6 @@
     <color name="dialog_line">#FFE2E2E2</color>
     <color name="dot_field">#FF000000</color>
     <color name="arc">#FF000000</color>
+    <color name="track">#FFE2E2E2</color>
     <color name="transparent">#00000000</color>
 </resources>

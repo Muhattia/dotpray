@@ -87,8 +87,8 @@ public final class WidgetRenderer {
         ink.dotField();
 
         // The wide widget is composed in a 326 x 150 dp design space. When the
-        // launcher gives it less height (or a narrow resize), the schedule is
-        // dropped instead of shrinking every line into illegibility.
+        // launcher gives it less height, the schedule and the quiet date lines
+        // are dropped instead of shrinking every line into illegibility.
         float density = context.getResources().getDisplayMetrics().density;
         float widthDp = widthPx / density;
         float heightDp = heightPx / density;
@@ -106,10 +106,17 @@ public final class WidgetRenderer {
 
         float pad = ink.dp(16);
         float header = ink.dp(17);
-        float metaBase = ink.dp(31);
-        float nameBase = ink.dp(55);
-        float clockBase = ink.dp(69);
-        float countBase = ink.dp(91);
+        float nameBase = ink.dp(full ? 46 : 44);
+        float timeBase = ink.dp(full ? 82 : 77);
+        float countBase = ink.dp(full ? 98 : 92);
+        float right = designW - pad;
+
+        // Two columns share the hero band: next prayer on the left, location
+        // and wall clock on the right. The 150dp left column is sized for the
+        // widest 12-hour time plus its meridiem at 40sp.
+        float columnGap = ink.dp(18);
+        float leftWidth = ink.dp(150);
+        float rightWidth = designW - pad * 2f - leftWidth - columnGap;
 
         // Centre the status dot on the Doto label's ink, not its baseline:
         // the glyph box floats about 3.5dp above the baseline at 10sp.
@@ -118,19 +125,25 @@ public final class WidgetRenderer {
         ink.text("NEXT PRAYER", pad + ink.dp(13), header,
                 ink.label(), ink.dim, 0.18f, Paint.Align.LEFT);
 
-        // The wall clock is contextual, so it lives in the header at a smaller
-        // size. "NOW" makes it unmistakably different from the scheduled time.
-        Live nowSeconds = currentClock(ink, now, use24, designW - pad, header, 9.5f,
-                liveSeconds, scale, offsetX, offsetY, snapshot.place.zone(), ink.dim,
-                "NOW ");
-
-        // Secondary line: a shortened locality on the left, then the
-        // Gregorian date with the Hijri date in a quieter weight.
-        float dateStart = dateLineRight(ink, snapshot, designW - pad, metaBase, 9f, 8f);
-        float cityMax = Math.max(ink.dp(20), dateStart - pad - ink.dp(8));
         String city = snapshot.place.shortName().toUpperCase(Locale.US);
-        ink.text(ink.fit(city, ink.label(8.5f), cityMax, 0.12f),
-                pad, metaBase, ink.label(8.5f), ink.faint, 0.12f, Paint.Align.LEFT);
+        ink.text(ink.fit(city, ink.label(9.5f), rightWidth, 0.12f),
+                right, header, ink.label(9.5f), ink.faint, 0.12f, Paint.Align.RIGHT);
+
+        // The wall clock is deliberately quieter and much smaller than the
+        // scheduled prayer time, so the two never read as the same value.
+        Live nowSeconds = currentClock(ink, now, use24, right,
+                ink.dp(full ? 52 : 50), 24f, liveSeconds, scale, offsetX, offsetY,
+                snapshot.place.zone(), ink.dim);
+
+        if (full) {
+            Paint gregPaint = ink.label(8.5f);
+            Paint hijriPaint = ink.label(8f);
+            ink.text(ink.fit(gregorian(snapshot), gregPaint, rightWidth, 0.08f),
+                    right, ink.dp(74), gregPaint, ink.dim, 0.08f, Paint.Align.RIGHT);
+            ink.text(ink.fit(hijri(snapshot), hijriPaint, rightWidth, 0.08f),
+                    right, ink.dp(85), hijriPaint, ink.faint, 0.08f,
+                    Paint.Align.RIGHT);
+        }
 
         ink.text(snapshot.next.prayer.label.toUpperCase(Locale.US), pad, nameBase,
                 ink.display(22), ink.fg, 0.04f, Paint.Align.LEFT);
@@ -139,25 +152,25 @@ public final class WidgetRenderer {
         String period = use24 ? "" : Format.meridiem(snapshot.next.local);
         String time = use24 ? Format.time24(snapshot.next.local)
                 : Format.time12(snapshot.next.local);
-        float timeRight = designW - pad;
+        Paint clock = ink.display(clockSize);
+        float timeWidth = ink.trackedWidth(time, clock, -0.01f);
+        ink.text(time, pad, timeBase, clock, ink.fg, -0.01f, Paint.Align.LEFT);
         if (!period.isEmpty()) {
-            Paint periodPaint = ink.label(9f);
-            float pw = ink.measure(period, periodPaint);
-            ink.text(period, designW - pad, clockBase - ink.dp(8), periodPaint, ink.faint,
-                    0.14f, Paint.Align.RIGHT);
-            timeRight -= pw + ink.dp(6);
+            ink.text(period, pad + timeWidth + ink.dp(5), timeBase - ink.dp(8),
+                    ink.label(9f), ink.faint, 0.14f, Paint.Align.LEFT);
         }
-        ink.text(time, timeRight, clockBase, ink.display(clockSize), ink.fg, -0.01f,
-                Paint.Align.RIGHT);
 
-        // The countdown is attached to the scheduled time on the right edge,
-        // directly below it. The red "IN" is the only large accent in the hero.
-        Live countdownSeconds = countdownLine(ink, snapshot, now, designW - pad,
-                countBase, 12.5f, liveSeconds, scale, offsetX, offsetY, true);
+        // The countdown hangs directly below the next-prayer time. Its red
+        // "IN" is the only strong accent in the hero.
+        Live countdownSeconds = countdownLine(ink, snapshot, now, pad, countBase,
+                12.5f, liveSeconds, scale, offsetX, offsetY, Paint.Align.LEFT);
 
         if (full) {
-            float divider = ink.dp(104);
-            ink.rule(pad, divider, designW - pad);
+            float divider = ink.dp(111);
+            // The divider doubles as the elapsed-time rail: a quiet track with
+            // a red fill and endpoint dot. It advances with the minute update,
+            // so it never needs a second-by-second widget wake-up.
+            ink.progress(snapshot, now.toEpochMilli(), pad, divider, designW - pad);
 
             // Justify the five columns across the full card width. Equal
             // columns left an obvious empty tail after Isha; measuring each
@@ -190,12 +203,17 @@ public final class WidgetRenderer {
             float x = pad;
             for (int i = 0; i < prayers.length; i++) {
                 boolean active = prayers[i] == snapshot.next.prayer;
-                ink.text(names[i], x, ink.dp(118), namePaint,
+                ink.text(names[i], x, ink.dp(123), namePaint,
                         active ? ACCENT : ink.faint, 0.08f, Paint.Align.LEFT);
-                ink.text(times[i], x, ink.dp(136), timePaint,
+                ink.text(times[i], x, ink.dp(140), timePaint,
                         active ? ink.fg : ink.inactive, 0f, Paint.Align.LEFT);
                 x += blocks[i] + gap;
             }
+        } else {
+            // Keep the elapsed-time rail in the shorter resize even though
+            // the schedule and date lines have been dropped.
+            ink.progress(snapshot, now.toEpochMilli(), pad, designH - ink.dp(8),
+                    designW - pad);
         }
 
         c.restore();
@@ -220,44 +238,39 @@ public final class WidgetRenderer {
         c.translate(offsetX, offsetY);
         c.scale(scale, scale);
 
-        float pad = ink.dp(12);
-        float header = ink.dp(16);
+        // The 2x2 card is one centred stack. Its glyph box runs from 44.2dp
+        // to 106.1dp at these sizes, which centres it precisely in 150dp.
+        float centerX = designW / 2f;
+        float nameBase = ink.dp(58);
+        float timeBase = ink.dp(89);
+        float countBase = ink.dp(106);
 
-        c.drawCircle(pad + ink.dp(2.5f), header - ink.dp(3.5f), ink.dp(2.5f),
-                ink.fill(ACCENT));
-        ink.text("NEXT", pad + ink.dp(9), header, ink.label(), ink.dim, 0.18f,
-                Paint.Align.LEFT);
-
-        Live nowSeconds = currentClock(ink, now, use24, designW - pad, header, 8.5f,
-                liveSeconds, scale, offsetX, offsetY, snapshot.place.zone(), ink.dim,
-                "NOW ");
-
-        ink.text(snapshot.next.prayer.label.toUpperCase(Locale.US), pad, ink.dp(48),
-                ink.display(18), ink.fg, 0.04f, Paint.Align.LEFT);
+        ink.text(snapshot.next.prayer.label.toUpperCase(Locale.US), centerX, nameBase,
+                ink.display(20), ink.fg, 0.04f, Paint.Align.CENTER);
 
         String period = use24 ? "" : Format.meridiem(snapshot.next.local);
         String time = use24 ? Format.time24(snapshot.next.local)
                 : Format.time12(snapshot.next.local);
-        Paint clock = ink.display(34);
-        ink.text(time, pad, ink.dp(78), clock, ink.fg, -0.01f, Paint.Align.LEFT);
+        Paint clock = ink.display(35);
+        float timeWidth = ink.trackedWidth(time, clock, -0.01f);
+        Paint periodPaint = ink.label(9f);
+        float periodWidth = period.isEmpty() ? 0f
+                : ink.trackedWidth(period, periodPaint, 0.14f);
+        float periodGap = period.isEmpty() ? 0f : ink.dp(4);
+        float totalWidth = timeWidth + periodGap + periodWidth;
+        float timeLeft = centerX - totalWidth / 2f;
+        ink.text(time, timeLeft, timeBase, clock, ink.fg, -0.01f, Paint.Align.LEFT);
         if (!period.isEmpty()) {
-            ink.text(period, pad + ink.measure(time, clock) + ink.dp(4),
-                    ink.dp(72), ink.label(8f), ink.faint, 0.14f, Paint.Align.LEFT);
+            ink.text(period, timeLeft + timeWidth + periodGap,
+                    timeBase - ink.dp(8), periodPaint, ink.faint, 0.14f,
+                    Paint.Align.LEFT);
         }
 
-        Live countdownSeconds = countdownLine(ink, snapshot, now, pad, ink.dp(99), 10.5f,
-                liveSeconds, scale, offsetX, offsetY, false);
-
-        // Gregorian date first, then the quieter Hijri line; the shortened
-        // locality closes the card without competing with the prayer time.
-        dateLineLeft(ink, snapshot, pad, ink.dp(121), 7.5f, 7f,
-                designW - pad * 2);
-        String city = snapshot.place.shortName().toUpperCase(Locale.US);
-        ink.text(ink.fit(city, ink.label(8f), designW - pad * 2, 0.10f),
-                pad, ink.dp(136), ink.label(8f), ink.faint, 0.10f, Paint.Align.LEFT);
+        Live countdownSeconds = countdownLine(ink, snapshot, now, centerX, countBase,
+                12f, liveSeconds, scale, offsetX, offsetY, Paint.Align.CENTER);
 
         c.restore();
-        return new Card(ink.bitmap, nowSeconds, countdownSeconds);
+        return new Card(ink.bitmap, null, countdownSeconds);
     }
 
     /**
@@ -269,25 +282,34 @@ public final class WidgetRenderer {
     private static Live currentClock(Ink ink, Instant now, boolean use24, float right,
                                      float baseline, float sizeSp, boolean live,
                                      float scale, float offsetX, float offsetY,
-                                     ZoneId zone, int color, String lead) {
+                                     ZoneId zone, int color) {
         ZonedDateTime local = now.atZone(zone);
         Paint paint = ink.display(sizeSp);
+        Paint periodPaint = ink.label(Math.max(8f, sizeSp * 0.38f));
         String clock = use24 ? Format.time24(local) : Format.time12(local);
         String suffix = use24 ? "" : " " + Format.meridiem(local);
-        String prefixLead = lead == null ? "" : lead;
+        float periodOffset = ink.dp(sizeSp * 0.12f);
+        float suffixWidth = suffix.isEmpty() ? 0f
+                : ink.trackedWidth(suffix, periodPaint, 0.14f);
+        float clockRight = right - suffixWidth;
 
         if (!live) {
-            ink.text(prefixLead + clock + suffix, right, baseline, paint, color, 0f,
-                    Paint.Align.RIGHT);
+            ink.text(clock, clockRight, baseline, paint, color, 0f, Paint.Align.RIGHT);
+            if (!suffix.isEmpty()) {
+                ink.text(suffix, right, baseline - periodOffset, periodPaint, color,
+                        0.14f, Paint.Align.RIGHT);
+            }
             return null;
         }
 
-        String prefix = prefixLead + clock + ":";
+        String prefix = clock + ":";
         float cell = ink.dp(CELL_ADVANCE * sizeSp);
-        float suffixWidth = suffix.isEmpty() ? 0f : paint.measureText(suffix);
-        float secondsLeft = right - suffixWidth - cell * 2f;
+        float secondsLeft = clockRight - cell * 2f;
         ink.text(prefix, secondsLeft, baseline, paint, color, 0f, Paint.Align.RIGHT);
-        ink.text(suffix, right, baseline, paint, color, 0f, Paint.Align.RIGHT);
+        if (!suffix.isEmpty()) {
+            ink.text(suffix, right, baseline - periodOffset, periodPaint, color,
+                    0.14f, Paint.Align.RIGHT);
+        }
         return live(ink, secondsLeft, baseline, sizeSp, true, scale, offsetX, offsetY,
                 color);
     }
@@ -300,7 +322,7 @@ public final class WidgetRenderer {
     private static Live countdownLine(Ink ink, PrayerClock.Snapshot snapshot, Instant now,
                                       float edge, float baseline, float sizeSp,
                                       boolean live, float scale, float offsetX,
-                                      float offsetY, boolean alignRight) {
+                                      float offsetY, Paint.Align align) {
         long remaining = Math.max(0L, snapshot.next.instant.toEpochMilli()
                 - now.toEpochMilli());
         long total = remaining / 1000L;
@@ -316,8 +338,11 @@ public final class WidgetRenderer {
         float gap = ink.dp(4);
         float valueWidth = value.measureText(clockPrefix);
         float pairWidth = ink.dp(CELL_ADVANCE * 2f * sizeSp);
-        float totalWidth = labelWidth + gap + valueWidth + pairWidth;
-        float left = alignRight ? edge - totalWidth : edge;
+        float totalWidth = labelWidth + gap + valueWidth + (live ? pairWidth : 0f);
+        float left;
+        if (align == Paint.Align.RIGHT) left = edge - totalWidth;
+        else if (align == Paint.Align.CENTER) left = edge - totalWidth / 2f;
+        else left = edge;
 
         if (!live) {
             ink.text(labelText, left, baseline, label, ACCENT, 0.12f,
@@ -377,62 +402,6 @@ public final class WidgetRenderer {
             return "IN " + minutes + "M";
         }
         return "IN <1M";
-    }
-
-    /**
-     * Draws the Gregorian date as the brighter part of the secondary line,
-     * followed by the quieter Hijri date. Returns the left edge so the caller
-     * can fit the location into the remaining width.
-     */
-    private static float dateLineRight(Ink ink, PrayerClock.Snapshot snapshot,
-                                       float right, float baseline,
-                                       float gregSize, float hijriSize) {
-        String greg = gregorian(snapshot);
-        String hijri = hijri(snapshot);
-        Paint gregPaint = ink.label(gregSize);
-        Paint hijriPaint = ink.label(hijriSize);
-        String secondary = hijri.isEmpty() ? "" : "\u00b7 " + hijri;
-        float gregWidth = ink.trackedWidth(greg, gregPaint, 0.08f);
-        float hijriWidth = secondary.isEmpty() ? 0f
-                : ink.trackedWidth(secondary, hijriPaint, 0.08f);
-        float gap = secondary.isEmpty() ? 0f : ink.dp(4);
-        float start = right - gregWidth - gap - hijriWidth;
-        ink.text(greg, start, baseline, gregPaint, ink.dim, 0.08f, Paint.Align.LEFT);
-        if (!secondary.isEmpty()) {
-            ink.text(secondary, start + gregWidth + gap, baseline, hijriPaint,
-                    ink.faint, 0.08f, Paint.Align.LEFT);
-        }
-        return start;
-    }
-
-    /** Left-aligned variant used by the 2x2 widget. */
-    private static void dateLineLeft(Ink ink, PrayerClock.Snapshot snapshot,
-                                     float left, float baseline,
-                                     float gregSize, float hijriSize,
-                                     float available) {
-        String greg = gregorian(snapshot);
-        String hijri = hijri(snapshot);
-        Paint gregPaint = ink.label(gregSize);
-        Paint hijriPaint = ink.label(hijriSize);
-        String secondary = hijri.isEmpty() ? "" : "\u00b7 " + hijri;
-        float gap = secondary.isEmpty() ? 0f : ink.dp(4);
-        float total = ink.trackedWidth(greg, gregPaint, 0.08f) + gap
-                + (secondary.isEmpty() ? 0f
-                : ink.trackedWidth(secondary, hijriPaint, 0.08f));
-        if (total > available) {
-            float factor = available / total;
-            gregPaint = ink.label(gregSize * factor);
-            hijriPaint = ink.label(hijriSize * factor);
-            total = ink.trackedWidth(greg, gregPaint, 0.08f) + gap
-                    + (secondary.isEmpty() ? 0f
-                    : ink.trackedWidth(secondary, hijriPaint, 0.08f));
-        }
-        ink.text(greg, left, baseline, gregPaint, ink.dim, 0.08f, Paint.Align.LEFT);
-        if (!secondary.isEmpty()) {
-            float gregWidth = ink.trackedWidth(greg, gregPaint, 0.08f);
-            ink.text(secondary, left + gregWidth + gap, baseline, hijriPaint,
-                    ink.faint, 0.08f, Paint.Align.LEFT);
-        }
     }
 
     private static String gregorian(PrayerClock.Snapshot snapshot) {
@@ -604,9 +573,18 @@ public final class WidgetRenderer {
                     + tracking * paint.getTextSize() * Math.max(0, s.length() - 1);
         }
 
-        void rule(float left, float y, float right) {
-            Paint line = fill(hairline);
-            canvas.drawRect(left, y, right, y + Math.max(1f, dp(1)), line);
+        void progress(PrayerClock.Snapshot snapshot, long nowMs,
+                      float left, float y, float right) {
+            Paint track = fill(hairline);
+            canvas.drawRect(left, y, right, y + Math.max(1f, dp(1)), track);
+
+            float fraction = snapshot.progress(nowMs);
+            if (fraction <= 0f) return;
+            float end = left + (right - left) * fraction;
+            Paint done = fill(ACCENT);
+            float height = Math.max(2f, dp(2));
+            canvas.drawRect(left, y, end, y + height, done);
+            canvas.drawCircle(end, y + height / 2f, dp(2.2f), done);
         }
 
     }

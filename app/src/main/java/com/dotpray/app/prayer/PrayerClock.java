@@ -51,6 +51,18 @@ public final class PrayerClock {
         public ZonedDateTimeHolder nextLocal() {
             return new ZonedDateTimeHolder(next.local);
         }
+
+        /**
+         * How much of the wait between the previous and next prayer has
+         * elapsed, clamped to 0..1. Used only for presentation; it does not
+         * change any calculated prayer instant.
+         */
+        public float progress(long nowMs) {
+            long from = previous.instant.toEpochMilli();
+            long to = next.instant.toEpochMilli();
+            if (to <= from) return 0f;
+            return Math.max(0f, Math.min(1f, (nowMs - from) / (float) (to - from)));
+        }
     }
 
     /** Tiny wrapper so callers do not need to import ZonedDateTime explicitly. */

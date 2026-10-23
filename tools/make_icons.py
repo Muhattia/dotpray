@@ -3,7 +3,9 @@
 
 The coloured mark comes from design/dotpray-icon.svg; the monochrome status-bar
 silhouette is design/dotpray-notification.svg (vectorised in
-res/drawable/ic_notification.xml). Requires rsvg-convert (librsvg2-bin) and
+res/drawable/ic_notification.xml). Both SVG view boxes are square and centre
+the mark, so every generated launcher, adaptive and notification-large PNG
+shares the same optical centre. Requires rsvg-convert (librsvg2-bin) and
 Pillow. The generated PNGs are committed, so the Android build itself does not
 need either tool.
 """
