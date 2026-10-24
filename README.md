@@ -24,6 +24,15 @@ the in-app System / Light / Dark choice.*
 
 ---
 
+## Credits
+
+- **Muhammad Attia** — development and design — [@Muhattia](https://github.com/Muhattia)
+- **Muhammad M. Hemdan** — original idea — [@karasudidntwakeup](https://github.com/karasudidntwakeup)
+
+Project: [github.com/Muhattia/dotpray](https://github.com/Muhattia/dotpray)
+
+---
+
 ## What it does
 
 | | |
@@ -52,9 +61,9 @@ starting point.
 
 ## Google Play assets
 
-The Play Store listing copy, five phone screenshots, feature graphic, 512 px
-icon, privacy policy, and Data safety draft are in [`aso/`](aso/). Start with
-[`aso/README.md`](aso/README.md).
+The Play Store listing copy, six phone screenshots (five app screens plus an
+optional credits card), feature graphic, 512 px icon, privacy policy, and Data
+safety draft are in [`aso/`](aso/). Start with [`aso/README.md`](aso/README.md).
 
 ---
 

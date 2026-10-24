@@ -3,6 +3,7 @@
 
 Outputs:
   aso/screenshots/01-prayer-times.png ... 05-private.png   (1080x1920)
+  aso/screenshots/06-team.png                              (1080x1920)
   aso/graphics/feature-graphic-1024x500.png
   aso/graphics/app-icon-512.png
 
@@ -13,13 +14,14 @@ from pathlib import Path
 import math
 import textwrap
 
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps
 
 ROOT = Path(__file__).resolve().parent.parent
 PREVIEW = ROOT / "preview"
 OUT = ROOT / "aso"
 SHOTS = OUT / "screenshots"
 GFX = OUT / "graphics"
+TEAM = OUT / "team"
 FONT_DIR = ROOT / "app" / "src" / "main" / "res" / "font"
 
 W, H = 1080, 1920
@@ -259,6 +261,80 @@ def shot_themes():
     return img
 
 
+def team_photo(path, crop=None, centering=(0.5, 0.5), size=452):
+    """Square, neutral-monochrome portraits that sit inside the dot-matrix system."""
+    im = Image.open(path).convert("RGB")
+    if crop:
+        im = im.crop(crop)
+    im = ImageOps.fit(im, (size, size), Image.Resampling.LANCZOS, centering=centering)
+    gray = ImageOps.grayscale(im)
+    gray = ImageOps.autocontrast(gray, cutoff=0.5)
+    gray = ImageEnhance.Contrast(gray).enhance(1.06)
+    gray = ImageEnhance.Sharpness(gray).enhance(1.08)
+    return ImageOps.colorize(gray, black=(7, 7, 7), white=(244, 244, 242)).convert("RGB")
+
+
+def shot_team():
+    img = Image.new("RGB", (W, H), BG)
+    draw = ImageDraw.Draw(img)
+    dot_field(draw, W, H)
+    label(draw, M, 62, "DOTPRAY / CREDITS")
+
+    icon = Image.open(PREVIEW / "app-icon.png").convert("RGBA").resize((140, 140), Image.Resampling.LANCZOS)
+    paste_rounded(img, icon, (M, 108), 22)
+    draw_lines(draw, (240, 104), ["TWO PEOPLE.", "ONE QUIET APP."], F_BLACK, FG, 82)
+    draw.text((240, 298), "Developed by Muhammad Attia.", font=F_BODY, fill=DIM, anchor="la")
+    draw.text((240, 335), "Original idea by Muhammad M. Hemdan.", font=F_BODY, fill=DIM, anchor="la")
+
+    size, gap, top = 452, 32, 432
+    x1, x2 = M, M + size + gap
+    label(draw, x1, 397, "01 / DEVELOPER", fill=RED)
+    label(draw, x2, 397, "02 / ORIGINAL IDEA", fill=RED)
+
+    p1 = team_photo(TEAM / "muhammad-attia.jpg", crop=(250, 0, 1750, 1500))
+    p2 = team_photo(TEAM / "muhammad-hemdan.png", centering=(0.5, 0.46))
+    for x, photo in ((x1, p1), (x2, p2)):
+        paste_rounded(img, photo, (x, top), 26)
+        draw.rounded_rectangle([x, top, x + size, top + size], radius=26,
+                               outline=(44, 44, 44), width=2)
+
+    draw.text((x1, 908), "MUHAMMAD ATTIA", font=font("black", 38), fill=FG, anchor="la")
+    draw.text((x2, 908), "MUHAMMAD M. HEMDAN", font=font("black", 38), fill=FG, anchor="la")
+    link_font = font("regular", 24)
+    draw.text((x1, 962), "github.com/Muhattia", font=link_font, fill=DIM, anchor="la")
+    draw.text((x2, 962), "github.com/karasudidntwakeup", font=link_font, fill=DIM, anchor="la")
+
+    draw.line([M, 1048, W - M, 1048], fill=LINE, width=1)
+    label(draw, M, 1082, "OPEN SOURCE / THE REPO")
+    draw.text((M, 1114), "github.com/Muhattia/dotpray",
+              font=font("black", 50), fill=FG, anchor="la")
+    draw.text((M, 1184), "Source code, releases, and issues — all public.",
+              font=F_BODY, fill=DIM, anchor="la")
+
+    # External-link arrow: the one deliberately non-typographic mark.
+    ax, ay = W - M - 48, 1128
+    draw.line([ax - 22, ay + 22, ax + 22, ay - 22], fill=RED, width=4)
+    draw.line([ax + 22, ay - 22, ax - 2, ay - 22], fill=RED, width=4)
+    draw.line([ax + 22, ay - 22, ax + 22, ay + 2], fill=RED, width=4)
+
+    py, ph = 1272, 184
+    draw.rounded_rectangle([M, py, W - M, py + ph], radius=22,
+                           fill=SURFACE, outline=LINE, width=1)
+    icon2 = Image.open(PREVIEW / "app-icon.png").convert("RGBA").resize((92, 92), Image.Resampling.LANCZOS)
+    paste_rounded(img, icon2, (M + 28, py + 34), 18)
+    draw.text((M + 146, py + 34), "DOTPRAY 1.2", font=font("black", 38), fill=FG, anchor="la")
+    tracking_text(draw, (M + 150, py + 92), "OFFLINE PRAYER CLOCK", F_LABEL, FAINT, 2.8)
+    tracking_text(draw, (W - M - 28, py + 50), "FREE", F_LABEL, RED, 3.0, anchor="ra")
+    tracking_text(draw, (W - M - 28, py + 84), "NO ADS", F_LABEL, DIM, 3.0, anchor="ra")
+    tracking_text(draw, (W - M - 28, py + 118), "NO TRACKING", F_LABEL, DIM, 3.0, anchor="ra")
+
+    tracking_text(draw, (W / 2, 1636), "TWO PEOPLE. ONE IDEA. NO NOISE.",
+                  font("black", 44), FG, 0.5, anchor="ma")
+    footer(draw, "DOTPRAY 1.2  ·  MADE BY TWO PEOPLE")
+    img.save(SHOTS / "06-team.png", optimize=True)
+    return img
+
+
 def shot_privacy():
     img = Image.new("RGB", (W, H), BG)
     draw = ImageDraw.Draw(img)
@@ -344,6 +420,7 @@ def main():
     shot_countdown()
     shot_widgets()
     shot_themes()
+    shot_team()
     shot_privacy()
     feature_graphic()
     app_icon()

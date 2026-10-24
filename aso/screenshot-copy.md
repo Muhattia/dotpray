@@ -1,8 +1,9 @@
 # Screenshot copy and order
 
 All screenshots are **1080 × 1920** (9:16), RGB PNG, ready for the phone
-screenshot slot. They are composed from the layout-accurate previews in
-`preview/`; the actual app uses the same layouts and colours.
+screenshot slot. The five app screens are composed from the layout-accurate
+previews in `preview/`; the actual app uses the same layouts and colours.
+`06-team.png` is a credits card built from the supplied portraits.
 
 | # | File | Headline | Supporting line | Job |
 |---|---|---|---|---|
@@ -11,6 +12,7 @@ screenshot slot. They are composed from the layout-accurate previews in
 | 3 | `03-widgets.png` | YOUR NEXT PRAYER, AT A GLANCE. | Two widget sizes: a wide 4×2 schedule or a compact 2×2 clock. | Show the home-screen habit. |
 | 4 | `04-themes.png` | DARK. LIGHT. YOUR CHOICE. | Follow the system, or keep it fixed. Both widgets follow. | Show personalization and polish. |
 | 5 | `05-private.png` | PRIVATE BY DEFAULT. | A prayer app with no server. | Close with no ads, no tracking, and no INTERNET permission. |
+| 6 | `06-team.png` | TWO PEOPLE. ONE QUIET APP. | Developed by Muhammad Attia. Original idea by Muhammad M. Hemdan. | Optional credits card: the people and the open-source repo. |
 
 ## Why this order
 
@@ -23,6 +25,8 @@ screenshot slot. They are composed from the layout-accurate previews in
 - **Screenshot 4** proves the design is intentional in both themes.
 - **Screenshot 5** closes with the sharpest differentiator: no ads, no
   tracking, and no `INTERNET` permission.
+- **Screenshot 6 (optional)** puts the two people and the public repo on the
+  final card. Keep it last; the five app screens do the product selling.
 
 ## Text rules used
 
@@ -31,12 +35,16 @@ screenshot slot. They are composed from the layout-accurate previews in
 - Supporting line under 90 characters.
 - No “Download now”, “Install”, star ratings, awards, or competitor logos.
 - No fake UI or features the app does not have.
-- Red is reserved for the live/next-prayer accent and the privacy points.
+- Red is reserved for the live/next-prayer accent, the privacy points, and the
+  credits links.
 
 ## Before publishing
 
-The images are marketing renders, not literal device captures. They mirror the
-real layouts, but a final QA pass on a physical device is still recommended:
+The five app screens are marketing renders, not literal device captures. They
+mirror the real layouts, but a final QA pass on a physical device is still
+recommended. `06-team.png` is a credits card, not an app UI capture; use it
+only if you want the listing to close on the team, and omit it if you prefer a
+pure app-screenshot set.
 
 1. Install `dist/dotpray-1.2.apk` on a phone.
 2. Set the location to Cairo and the theme to Dark, then check screenshot 1.

@@ -171,5 +171,6 @@ The strongest conversion levers are:
 3. **03-widgets.png** — the home-screen use case, both widget sizes.
 4. **04-themes.png** — dark/light personalization.
 5. **05-private.png** — the trust differentiator.
+6. **06-team.png** — optional closing credits card (the two people and the repo).
 
 See `screenshot-copy.md` for the exact captions and the reasoning behind the order.

@@ -14,6 +14,8 @@ privacy policy, and the Data safety draft.
 | `screenshots/03-widgets.png` | Phone screenshot 3 — 1080 × 1920. |
 | `screenshots/04-themes.png` | Phone screenshot 4 — 1080 × 1920. |
 | `screenshots/05-private.png` | Phone screenshot 5 — 1080 × 1920. |
+| `screenshots/06-team.png` | Optional closing credits card — 1080 × 1920. |
+| `team/` | Source portraits supplied for the credits card. |
 | `graphics/feature-graphic-1024x500.png` | Feature graphic, 1024 × 500, RGB (no alpha). |
 | `graphics/app-icon-512.png` | Play Store icon, 512 × 512, 32-bit PNG. |
 | `screenshot-copy.md` | The wording and order of the screenshots. |
@@ -41,7 +43,8 @@ privacy policy, and the Data safety draft.
 
 3. **Store listing**
    - Copy from `play-listing.md`.
-   - Upload the five screenshots in numerical order.
+   - Upload the five app screenshots in numerical order. Add `06-team.png` last
+     only if you want a credits card in the listing.
    - Upload `feature-graphic-1024x500.png` and `app-icon-512.png`.
    - Replace `[PLACEHOLDER: support email]` with a monitored address.
    - Replace the privacy-policy placeholder with the hosted URL.
@@ -86,15 +89,17 @@ privacy policy, and the Data safety draft.
 
 | Asset | Size | Format | Status |
 |---|---|---|---|
-| Phone screenshots | 1080 × 1920 (9:16) | RGB PNG | 5 of 5 ready |
+| Phone screenshots | 1080 × 1920 (9:16) | RGB PNG | 6 supplied (5 app + optional credits) |
 | Feature graphic | 1024 × 500 | RGB PNG, no alpha | Ready |
 | Store icon | 512 × 512 | 32-bit PNG with alpha | Ready |
 | App icon source | 1024 × 1024 | RGBA PNG | In `preview/` |
 | Privacy policy | HTML | Self-contained | Ready to host |
 
-Google Play accepts 2–8 phone screenshots; five are supplied. Tablet and
-Chromebook screenshots are **not** included because the app has not been
-visually QA'd on those form factors.
+Google Play accepts 2–8 phone screenshots; six are supplied — five app screens
+and an optional credits card. The credits card is not an app UI capture; omit
+it if you prefer a pure screenshot set. Tablet and Chromebook screenshots are
+**not** included because the app has not been visually QA'd on those form
+factors.
 
 ## ASO notes
 
@@ -104,6 +109,7 @@ visually QA'd on those form factors.
 - **Second screenshot:** the countdown is the habit hook.
 - **Third screenshot:** the widget is the retention hook.
 - **Fifth screenshot:** privacy is the trust hook.
+- **Sixth screenshot (optional):** the people and the public repo; keep it last.
 - **Avoid:** “adhan” (no audio call to prayer), “Nothing OS” (no affiliation),
   “all methods” (only one calculation method), and “Arabic” (not supported).
 
@@ -124,5 +130,6 @@ python3 tools/make_aso.py
 ```
 
 The generator reads `preview/app-screen.png`, `preview/app-screen-light.png`,
-`preview/widget-wide.png`, `preview/widget-small.png`, and the Doto fonts. It
-writes the five screenshots and two graphics into `aso/`.
+`preview/widget-wide.png`, `preview/widget-small.png`, the two portraits in
+`aso/team/`, and the Doto fonts. It writes the six screenshots and two graphics
+into `aso/`.
