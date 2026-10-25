@@ -8,13 +8,17 @@ import android.view.View;
 
 import com.dotpray.app.R;
 
-/** Hairline progress rail showing how much of the wait has elapsed. */
+/**
+ * Segmented dotted progress rail. Completed dots use the accent colour and
+ * remaining dots use the quiet track colour; the same geometry is shared with
+ * the home-screen widgets.
+ */
 public class ProgressLineView extends View {
 
-    private final Paint track = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint cap = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private float density;
+    private final Paint done = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint remaining = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private float radius;
+    private float pitch;
     private float progress;
 
     public ProgressLineView(Context context) {
@@ -28,13 +32,11 @@ public class ProgressLineView extends View {
     }
 
     private void init() {
-        density = getResources().getDisplayMetrics().density;
-        track.setColor(getContext().getColor(R.color.track));
-        track.setStrokeWidth(1.5f * density);
-        fill.setColor(getContext().getColor(R.color.accent));
-        fill.setStrokeWidth(2.5f * density);
-        fill.setStrokeCap(Paint.Cap.ROUND);
-        cap.setColor(getContext().getColor(R.color.accent));
+        float density = getResources().getDisplayMetrics().density;
+        radius = ProgressDots.RADIUS_DP * density;
+        pitch = ProgressDots.PITCH_DP * density;
+        done.setColor(getContext().getColor(R.color.accent));
+        remaining.setColor(getContext().getColor(R.color.track));
     }
 
     public void setProgress(float value) {
@@ -48,16 +50,19 @@ public class ProgressLineView extends View {
     protected void onDraw(Canvas canvas) {
         float w = getWidth();
         float h = getHeight();
+        if (w <= radius * 2f || h <= 0f) return;
+
+        float start = radius;
+        float end = w - radius;
         float cy = h / 2f;
-        float left = 1.5f * density;
-        float right = w - 1.5f * density;
+        int count = ProgressDots.count(end - start, radius, pitch);
+        int completed = ProgressDots.completed(count, progress);
+        boolean rtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
 
-        canvas.drawLine(left, cy, right, cy, track);
-
-        float end = left + (right - left) * progress;
-        if (end > left + 0.5f) {
-            canvas.drawLine(left, cy, end, cy, fill);
-            canvas.drawCircle(end, cy, 2.6f * density, cap);
+        for (int i = 0; i < count; i++) {
+            float cx = ProgressDots.center(start, end, radius, count, i);
+            boolean lit = ProgressDots.isComplete(i, count, completed, rtl);
+            canvas.drawCircle(cx, cy, radius, lit ? done : remaining);
         }
     }
 }

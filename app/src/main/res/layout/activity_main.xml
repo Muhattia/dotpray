@@ -33,22 +33,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="bottom"
+                android:layoutDirection="ltr"
                 android:orientation="horizontal">
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:gravity="start"
                     android:orientation="vertical">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ellipsize="end"
+                        android:gravity="start"
                         android:letterSpacing="0.05"
                         android:maxLines="1"
                         android:singleLine="true"
-                        android:text="DOTPRAY"
+                        android:text="@string/brand_wordmark"
+                        android:textDirection="ltr"
                         android:textSize="26sp"
                         style="@style/DisplayBlack" />
 
@@ -57,9 +61,11 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="7dp"
                         android:ellipsize="end"
+                        android:gravity="start"
                         android:maxLines="1"
                         android:singleLine="true"
                         android:text="@string/tagline"
+                        android:textAlignment="viewStart"
                         style="@style/LabelFaint" />
                 </LinearLayout>
 
@@ -73,7 +79,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="NOW"
+                        android:text="@string/now_label"
                         style="@style/LabelFaint" />
 
                     <TextView
@@ -86,13 +92,11 @@
                         android:autoSizeStepGranularity="0.5sp"
                         android:autoSizeTextType="uniform"
                         android:gravity="end"
-                        android:letterSpacing="0.04"
                         android:maxLines="1"
                         android:maxWidth="140dp"
-                        android:text="06:26:16 PM"
-                        android:textColor="@color/fg_dim"
+                        android:text="@string/sample_clock"
                         android:textSize="12sp"
-                        style="@style/Value" />
+                        style="@style/ValueNumeric" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -101,7 +105,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:gravity="bottom"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -111,36 +115,44 @@
                     android:gravity="start"
                     android:orientation="vertical">
 
-                    <LinearLayout
-                        android:id="@+id/cityButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_pill_outline"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingStart="12dp"
-                        android:paddingTop="8dp"
-                        android:paddingEnd="14dp"
-                        android:paddingBottom="8dp"
-                        android:stateListAnimator="@null">
+                    <!-- The chip stays visually 28 dp tall, but the frame
+                         gives it a full 48 dp touch target. -->
+                    <FrameLayout
+                        android:id="@+id/cityTouch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="48dp">
 
-                        <View
-                            android:layout_width="6dp"
-                            android:layout_height="6dp"
-                            android:background="@drawable/bg_dot" />
-
-                        <TextView
-                            android:id="@+id/cityLabel"
-                            android:layout_width="0dp"
+                        <LinearLayout
+                            android:id="@+id/cityButton"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:layout_weight="1"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:singleLine="true"
-                            android:text="CAIRO"
-                            style="@style/LabelStrong" />
-                    </LinearLayout>
+                            android:layout_gravity="start|center_vertical"
+                            android:background="@drawable/bg_pill_outline"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="12dp"
+                            android:paddingTop="8dp"
+                            android:paddingEnd="14dp"
+                            android:paddingBottom="8dp"
+                            android:stateListAnimator="@null">
+
+                            <View
+                                android:layout_width="6dp"
+                                android:layout_height="6dp"
+                                android:background="@drawable/bg_dot" />
+
+                            <TextView
+                                android:id="@+id/cityLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:ellipsize="end"
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:text="@string/sample_city"
+                                style="@style/LabelStrong" />
+                        </LinearLayout>
+                    </FrameLayout>
                 </LinearLayout>
 
                 <LinearLayout
@@ -154,8 +166,8 @@
                         android:id="@+id/dateLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:autoSizeMaxTextSize="10sp"
-                        android:autoSizeMinTextSize="7sp"
+                        android:autoSizeMaxTextSize="@dimen/text_date_max"
+                        android:autoSizeMinTextSize="@dimen/text_date_min"
                         android:autoSizeStepGranularity="0.5sp"
                         android:autoSizeTextType="uniform"
                         android:ellipsize="end"
@@ -163,7 +175,7 @@
                         android:maxWidth="190dp"
                         android:singleLine="true"
                         android:gravity="end"
-                        android:text="THU / 22 OCT 2026"
+                        android:text="@string/sample_date"
                         style="@style/Label" />
 
                     <TextView
@@ -171,8 +183,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:autoSizeMaxTextSize="9sp"
-                        android:autoSizeMinTextSize="6.5sp"
+                        android:autoSizeMaxTextSize="@dimen/text_hijri_max"
+                        android:autoSizeMinTextSize="@dimen/text_hijri_min"
                         android:autoSizeStepGranularity="0.5sp"
                         android:autoSizeTextType="uniform"
                         android:ellipsize="end"
@@ -180,7 +192,7 @@
                         android:maxWidth="190dp"
                         android:singleLine="true"
                         android:gravity="end"
-                        android:text="11 JUMADA I 1448"
+                        android:text="@string/sample_hijri"
                         style="@style/LabelFaint" />
                 </LinearLayout>
             </LinearLayout>
@@ -191,9 +203,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="7dp"
                 android:ellipsize="end"
+                android:gravity="start"
                 android:maxLines="1"
                 android:singleLine="true"
-                android:text="CAIRO, EG · 30.044°N / 31.236°E"
+                android:text="@string/sample_detail"
+                android:textAlignment="viewStart"
+                android:textDirection="anyRtl"
                 style="@style/LabelFaint" />
 
             <!-- ── next prayer ───────────────────────────────────────── -->
@@ -207,12 +222,6 @@
                 android:paddingTop="18dp"
                 android:paddingEnd="20dp"
                 android:paddingBottom="18dp">
-
-                <com.dotpray.app.ui.GlyphArcView
-                    android:layout_width="150dp"
-                    android:layout_height="150dp"
-                    android:layout_gravity="top|end"
-                    android:alpha="0.55" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -230,6 +239,7 @@
                             android:layout_height="10dp" />
 
                         <TextView
+                            android:id="@+id/nextHeader"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="9dp"
@@ -242,8 +252,9 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:gravity="end"
-                            android:text="01 / 05"
-                            style="@style/LabelFaint" />
+                            android:text="@string/sample_index"
+                            android:textColor="@color/fg_dim"
+                            style="@style/LabelNumeric" />
                     </LinearLayout>
 
                     <TextView
@@ -254,29 +265,42 @@
                         android:ellipsize="end"
                         android:maxLines="1"
                         android:singleLine="true"
-                        android:text="MAGHRIB"
-                        android:textSize="30sp"
-                        style="@style/Display" />
+                        android:text="@string/sample_prayer"
+                        android:textSize="@dimen/text_prayer_hero"
+                        style="@style/PrayerName" />
 
                     <TextView
                         android:id="@+id/nextTime"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:autoSizeMaxTextSize="82sp"
-                        android:autoSizeMinTextSize="36sp"
+                        android:autoSizeMaxTextSize="60sp"
+                        android:autoSizeMinTextSize="32sp"
                         android:autoSizeStepGranularity="2sp"
                         android:autoSizeTextType="uniform"
                         android:ellipsize="end"
                         android:gravity="start"
-                        android:letterSpacing="-0.01"
+                        android:letterSpacing="0"
                         android:maxLines="1"
                         android:singleLine="true"
-                        android:text="18:42"
-                        android:textSize="82sp"
-                        style="@style/Display" />
+                        android:text="@string/sample_time"
+                        android:textSize="60sp"
+                        style="@style/DisplayNumeric" />
+
+                    <TextView
+                        android:id="@+id/graceMessage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:textColor="@color/fg"
+                        android:textSize="@dimen/text_grace"
+                        android:visibility="gone"
+                        style="@style/Value" />
 
                     <LinearLayout
+                        android:id="@+id/countdownRow"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
@@ -286,8 +310,8 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="IN"
-                            android:textColor="@color/accent"
+                            android:text="@string/in_label"
+                            android:textColor="@color/accent_text"
                             style="@style/Label" />
 
                         <TextView
@@ -295,10 +319,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
-                            android:text="01:25:12"
+                            android:text="@string/sample_countdown"
                             android:textColor="@color/fg"
                             android:textSize="22sp"
-                            style="@style/Value" />
+                            style="@style/ValueNumeric" />
                     </LinearLayout>
 
                     <com.dotpray.app.ui.ProgressLineView
@@ -322,16 +346,16 @@
                             android:ellipsize="end"
                             android:maxLines="1"
                             android:singleLine="true"
-                            android:text="SINCE ASR 15:51"
-                            style="@style/LabelFaint" />
+                            android:text="@string/sample_since"
+                            style="@style/Label" />
 
                         <TextView
                             android:id="@+id/progressLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="12dp"
-                            android:text="0% ELAPSED"
-                            style="@style/LabelFaint" />
+                            android:text="@string/sample_progress"
+                            style="@style/Label" />
                     </LinearLayout>
                 </LinearLayout>
             </FrameLayout>
@@ -362,7 +386,7 @@
                     android:id="@+id/clockTag"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="24H"
+                    android:text="@string/clock_24h_tag"
                     style="@style/LabelFaint" />
             </LinearLayout>
 
@@ -378,28 +402,41 @@
                 android:id="@+id/tileLocation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="0dp"
                 android:layout_marginTop="22dp"
+                android:layout_marginEnd="0dp"
                 android:background="@drawable/bg_tile"
+                android:clipToPadding="true"
+                android:gravity="start"
                 android:orientation="vertical"
                 android:padding="16dp"
                 android:stateListAnimator="@null">
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="CURRENT LOCATION"
-                    style="@style/LabelFaint" />
+                    android:gravity="start"
+                    android:text="@string/current_location_label"
+                    android:textAlignment="viewStart"
+                    android:textDirection="anyRtl"
+                    style="@style/Label" />
 
                 <TextView
                     android:id="@+id/locationValue"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="11dp"
+                    android:autoSizeMaxTextSize="@dimen/text_location"
+                    android:autoSizeMinTextSize="@dimen/text_location_min"
+                    android:autoSizeStepGranularity="0.5sp"
+                    android:autoSizeTextType="uniform"
                     android:ellipsize="end"
-                    android:maxLines="1"
-                    android:singleLine="true"
-                    android:text="CAIRO, EG"
-                    android:textSize="15sp"
+                    android:gravity="start"
+                    android:maxLines="2"
+                    android:text="@string/sample_location"
+                    android:textAlignment="viewStart"
+                    android:textDirection="firstStrong"
+                    android:textSize="@dimen/text_location"
                     style="@style/Value" />
 
                 <TextView
@@ -408,21 +445,13 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="7dp"
                     android:ellipsize="end"
+                    android:gravity="start"
                     android:maxLines="1"
                     android:singleLine="true"
-                    android:text="30.044°N / 31.236°E"
-                    style="@style/LabelFaint" />
-
-                <TextView
-                    android:id="@+id/qiblaValue"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:singleLine="true"
-                    android:text="QIBLA 137° SE"
-                    style="@style/LabelFaint" />
+                    android:text="@string/sample_coords"
+                    android:textAlignment="viewStart"
+                    android:textDirection="ltr"
+                    style="@style/Label" />
 
                 <TextView
                     android:id="@+id/locationHint"
@@ -430,11 +459,90 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:ellipsize="end"
+                    android:gravity="start"
                     android:maxLines="1"
                     android:singleLine="true"
-                    android:text="TAP TO REFRESH"
-                    android:textColor="@color/accent"
+                    android:text="@string/location_hint_gps"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/fg"
+                    android:textDirection="anyRtl"
                     style="@style/Label" />
+            </LinearLayout>
+
+            <!-- ── qibla ─────────────────────────────────────────────── -->
+            <LinearLayout
+                android:id="@+id/tileQibla"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_tile"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:minHeight="68dp"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingTop="12dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="12dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_qibla" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:gravity="start"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:gravity="start"
+                        android:maxLines="1"
+                        android:singleLine="true"
+                        android:text="@string/qibla"
+                        android:textAlignment="viewStart"
+                        style="@style/LabelStrong" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:ellipsize="end"
+                        android:gravity="start"
+                        android:maxLines="1"
+                        android:singleLine="true"
+                        android:text="@string/qibla_open_compass"
+                        android:textAlignment="viewStart"
+                        style="@style/LabelFaint" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/qiblaTileValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:letterSpacing="0.04"
+                    android:text="@string/sample_qibla_bearing"
+                    android:textDirection="ltr"
+                    android:textSize="14sp"
+                    style="@style/DisplayNumeric" />
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginStart="8dp"
+                    android:autoMirrored="true"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_chevron"
+                    android:tint="@color/fg_dim" />
             </LinearLayout>
 
             <!-- ── actions ────────────────────────────────────────────── -->
@@ -442,27 +550,39 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="22dp"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/btnAddWidget"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1.35"
+                    android:layout_height="52dp"
+                    android:layout_weight="58"
+                    android:ellipsize="end"
                     android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="6dp"
+                    android:singleLine="true"
                     android:text="@string/add_widget"
                     style="@style/ButtonPill" />
 
                 <Space
                     android:layout_width="10dp"
-                    android:layout_height="1dp" />
+                    android:layout_height="52dp" />
 
                 <TextView
                     android:id="@+id/btnSettingsGhost"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_height="52dp"
+                    android:layout_weight="42"
+                    android:ellipsize="end"
                     android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="6dp"
+                    android:singleLine="true"
                     android:text="@string/settings"
                     style="@style/ButtonGhost" />
             </LinearLayout>
@@ -481,7 +601,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:gravity="center"
-                android:text="DOTPRAY 1.2 · DOTO (OFL)"
+                android:text="@string/version_label"
                 style="@style/LabelFaint" />
         </LinearLayout>
     </ScrollView>

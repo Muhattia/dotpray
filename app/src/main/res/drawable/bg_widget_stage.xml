@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A wallpaper sample, not another card: a soft accent glow and a cool
+     shadow behind the widget preview. The differences are deliberately
+     obvious, so the transparent card reads as clear rather than as a white
+     card on a white page. The dot field drawn over it belongs to the sample,
+     not to the widget. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:centerColor="#FFDDDDDD"
+                android:endColor="#FFA6A6A6"
+                android:startColor="#FFF7F7F7"
+                android:type="linear" />
+            <corners android:radius="26dp" />
+        </shape>
+    </item>
+
+    <item
+        android:width="112dp"
+        android:height="112dp"
+        android:gravity="top|right"
+        android:right="12dp"
+        android:top="10dp">
+        <shape android:shape="oval">
+            <solid android:color="#2ED71921" />
+        </shape>
+    </item>
+
+    <item
+        android:width="96dp"
+        android:height="64dp"
+        android:gravity="bottom|left"
+        android:bottom="10dp"
+        android:left="12dp">
+        <shape android:shape="oval">
+            <solid android:color="#16000000" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="26dp" />
+            <stroke
+                android:width="1dp"
+                android:color="@color/line" />
+        </shape>
+    </item>
+</layer-list>

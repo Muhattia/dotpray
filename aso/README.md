@@ -1,8 +1,12 @@
 # Dotpray — Google Play ASO package
 
-Prepared for **Dotpray 1.2** (`com.dotpray.app`, version code 17).  
+Prepared for **Dotpray 1.3** (`com.dotpray.app`, version code 18).  
 This folder contains the store listing copy, screenshots, feature graphic, icon,
 privacy policy, and the Data safety draft.
+
+> **Screenshot status:** the PNGs in `screenshots/` were regenerated from the
+> 1.3 layout previews. They are still marketing renders; replace any image that
+> differs from the final device build after on-device QA.
 
 ## What is in here
 
@@ -14,8 +18,6 @@ privacy policy, and the Data safety draft.
 | `screenshots/03-widgets.png` | Phone screenshot 3 — 1080 × 1920. |
 | `screenshots/04-themes.png` | Phone screenshot 4 — 1080 × 1920. |
 | `screenshots/05-private.png` | Phone screenshot 5 — 1080 × 1920. |
-| `screenshots/06-team.png` | Optional closing credits card — 1080 × 1920. |
-| `team/` | Source portraits supplied for the credits card. |
 | `graphics/feature-graphic-1024x500.png` | Feature graphic, 1024 × 500, RGB (no alpha). |
 | `graphics/app-icon-512.png` | Play Store icon, 512 × 512, 32-bit PNG. |
 | `screenshot-copy.md` | The wording and order of the screenshots. |
@@ -43,8 +45,7 @@ privacy policy, and the Data safety draft.
 
 3. **Store listing**
    - Copy from `play-listing.md`.
-   - Upload the five app screenshots in numerical order. Add `06-team.png` last
-     only if you want a credits card in the listing.
+   - Upload the five app screenshots in numerical order.
    - Upload `feature-graphic-1024x500.png` and `app-icon-512.png`.
    - Replace `[PLACEHOLDER: support email]` with a monitored address.
    - Replace the privacy-policy placeholder with the hosted URL.
@@ -72,7 +73,7 @@ privacy policy, and the Data safety draft.
 6. **Test before production**
    - Upload to internal testing first.
    - Install on a clean device and check the location prompt, prayer alerts,
-     both widget sizes, both themes, and the settings sheet.
+     all three widget layouts, both themes, resizing, and the settings sheet.
    - Run the Play pre-launch report.
    - Replace any screenshot that does not match the device rendering.
 
@@ -89,29 +90,29 @@ privacy policy, and the Data safety draft.
 
 | Asset | Size | Format | Status |
 |---|---|---|---|
-| Phone screenshots | 1080 × 1920 (9:16) | RGB PNG | 6 supplied (5 app + optional credits) |
+| Phone screenshots | 1080 × 1920 (9:16) | RGB PNG | 5 supplied |
 | Feature graphic | 1024 × 500 | RGB PNG, no alpha | Ready |
 | Store icon | 512 × 512 | 32-bit PNG with alpha | Ready |
 | App icon source | 1024 × 1024 | RGBA PNG | In `preview/` |
 | Privacy policy | HTML | Self-contained | Ready to host |
 
-Google Play accepts 2–8 phone screenshots; six are supplied — five app screens
-and an optional credits card. The credits card is not an app UI capture; omit
-it if you prefer a pure screenshot set. Tablet and Chromebook screenshots are
-**not** included because the app has not been visually QA'd on those form
-factors.
+Google Play accepts 2–8 phone screenshots; five are supplied. Tablet and
+Chromebook screenshots are **not** included because the app has not been
+visually QA'd on those form factors.
 
 ## ASO notes
 
 - **Title:** brand + `Offline` + `Prayer Times` fits in 29/30 characters.
 - **Short description:** six benefit keywords in 75/80 characters.
-- **First screenshot:** shows the whole product and the red live accent.
-- **Second screenshot:** the countdown is the habit hook.
+- **First screenshot:** shows the whole product and the red next-prayer accent.
+- **Second screenshot:** the minute-precise countdown is the habit hook.
 - **Third screenshot:** the widget is the retention hook.
 - **Fifth screenshot:** privacy is the trust hook.
-- **Sixth screenshot (optional):** the people and the public repo; keep it last.
 - **Avoid:** “adhan” (no audio call to prayer), “Nothing OS” (no affiliation),
-  “all methods” (only one calculation method), and “Arabic” (not supported).
+  and “all methods” (only one calculation method).
+- **Arabic is a real interface option in 1.3**, not decoration: Settings offers
+  English and العربية, and the Arabic UI is RTL with localized names,
+  notifications and widgets. The store copy may now say so.
 
 Run store-listing experiments on:
 1. title (offline vs. widget emphasis),
@@ -130,6 +131,5 @@ python3 tools/make_aso.py
 ```
 
 The generator reads `preview/app-screen.png`, `preview/app-screen-light.png`,
-`preview/widget-wide.png`, `preview/widget-small.png`, the two portraits in
-`aso/team/`, and the Doto fonts. It writes the six screenshots and two graphics
-into `aso/`.
+`preview/widget-wide.png`, `preview/widget-small.png`, and the bundled Doto
+fonts. It writes the five screenshots and two graphics into `aso/`.

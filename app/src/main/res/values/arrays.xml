@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="hijri_months">
+        <item>MUHARRAM</item>
+        <item>SAFAR</item>
+        <item>RABI AL-AWWAL</item>
+        <item>RABI AL-THANI</item>
+        <item>JUMADA AL-AWWAL</item>
+        <item>JUMADA AL-THANI</item>
+        <item>RAJAB</item>
+        <item>SHABAN</item>
+        <item>RAMADAN</item>
+        <item>SHAWWAL</item>
+        <item>DHU AL-QIDAH</item>
+        <item>DHU AL-HIJJAH</item>
+    </string-array>
+
+    <string-array name="hijri_months_short">
+        <item>MUH</item>
+        <item>SAF</item>
+        <item>RABI I</item>
+        <item>RABI II</item>
+        <item>JUM I</item>
+        <item>JUM II</item>
+        <item>RAJAB</item>
+        <item>SHABAN</item>
+        <item>RAMADAN</item>
+        <item>SHAWWAL</item>
+        <item>DHU Q</item>
+        <item>DHU H</item>
+    </string-array>
+</resources>

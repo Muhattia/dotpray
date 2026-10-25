@@ -11,6 +11,7 @@ import com.dotpray.app.data.PrayerPrefs;
 import com.dotpray.app.prayer.CalcMethod;
 import com.dotpray.app.prayer.PrayerClock;
 import com.dotpray.app.widget.PrayerWidgetProvider;
+import com.dotpray.app.widget.WidgetTick;
 
 import java.time.Instant;
 
@@ -42,7 +43,7 @@ public final class PrayerAlarmScheduler {
         if (manager == null) return;
 
         PrayerPrefs prefs = new PrayerPrefs(app);
-        Place place = prefs.getPlace();
+        Place place = prefs.syncGpsZone();
         PrayerClock.Snapshot snapshot = PrayerClock.snapshot(Instant.now(), place,
                 CalcMethod.EGYPT, prefs.getAsr());
 
@@ -64,6 +65,12 @@ public final class PrayerAlarmScheduler {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         setExactOrAllowWhileIdle(manager, refreshAt, refresh);
 
+        // The card shows "PRAYER NOW" between the Adhan and the end of the
+        // grace period, then switches to the next countdown. This widget-only
+        // alarm is separate from the alert above so neither can cancel the
+        // other.
+        WidgetTick.scheduleGrace(app);
+
         if (!prefs.isAlertsEnabled()) {
             cancelIfPresent(manager, app, REQUEST_ALERT,
                     PrayerAlarmReceiver.class, ACTION_ALERT);
@@ -72,7 +79,7 @@ public final class PrayerAlarmScheduler {
 
         Intent alert = new Intent(app, PrayerAlarmReceiver.class)
                 .setAction(ACTION_ALERT)
-                .putExtra("prayer", snapshot.next.prayer.label)
+                .putExtra("prayer", snapshot.next.prayer.name())
                 .putExtra("time", snapshot.next.local.toString())
                 .putExtra("place", place.name);
         PendingIntent pending = PendingIntent.getBroadcast(app, REQUEST_ALERT, alert,

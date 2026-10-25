@@ -13,20 +13,11 @@ import java.time.temporal.ChronoField;
  * cannot reproduce. The arithmetic fallback is kept only for the unlikely
  * case where the platform chronology rejects a date; it is not used on current
  * Android releases.
+ *
+ * <p>Month names are supplied by the caller from localized resources; this
+ * class stays free of Android types and of any hardcoded language.
  */
 public final class Hijri {
-
-    private static final String[] MONTHS = {
-            "MUHARRAM", "SAFAR", "RABI AL-AWWAL", "RABI AL-THANI",
-            "JUMADA AL-AWWAL", "JUMADA AL-THANI", "RAJAB", "SHABAN",
-            "RAMADAN", "SHAWWAL", "DHU AL-QIDAH", "DHU AL-HIJJAH"
-    };
-
-    /** Shorter forms for the tightly constrained widget lines. */
-    private static final String[] SHORT_MONTHS = {
-            "MUH", "SAF", "RABI I", "RABI II", "JUM I", "JUM II",
-            "RAJAB", "SHABAN", "RAMADAN", "SHAWWAL", "DHU Q", "DHU H"
-    };
 
     private final int year;
     private final int month;
@@ -66,16 +57,21 @@ public final class Hijri {
         return new Hijri(year, month, day);
     }
 
-    /** e.g. "10 JUMADA AL-AWWAL 1448" */
-    public String label() {
-        String name = MONTHS[Math.max(0, Math.min(11, month - 1))];
-        return day + " " + name + " " + year;
+    /** e.g. "10 JUMADA AL-AWWAL 1448" or "10 جمادى الأولى 1448". */
+    public String label(String[] months) {
+        return day + " " + monthName(months) + " " + year;
     }
 
     /** e.g. "10 JUM I 1448" for the widget's narrow date line. */
-    public String shortLabel() {
-        String name = SHORT_MONTHS[Math.max(0, Math.min(11, month - 1))];
-        return day + " " + name + " " + year;
+    public String shortLabel(String[] months) {
+        return day + " " + monthName(months) + " " + year;
+    }
+
+    private String monthName(String[] months) {
+        if (months == null || months.length < 12) {
+            return String.valueOf(month);
+        }
+        return months[Math.max(0, Math.min(11, month - 1))];
     }
 
     private static int julianDay(int year, int month, int day) {

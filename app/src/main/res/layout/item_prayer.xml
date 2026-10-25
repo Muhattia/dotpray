@@ -6,9 +6,9 @@
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingStart="12dp"
-    android:paddingTop="11dp"
+    android:paddingTop="13dp"
     android:paddingEnd="16dp"
-    android:paddingBottom="11dp">
+    android:paddingBottom="13dp">
 
     <View
         android:id="@+id/pMarker"
@@ -22,8 +22,8 @@
         android:id="@+id/pIndex"
         android:layout_width="22dp"
         android:layout_height="wrap_content"
-        android:text="01"
-        style="@style/LabelFaint" />
+        android:text="@string/sample_index"
+        style="@style/LabelNumeric" />
 
     <TextView
         android:id="@+id/pName"
@@ -32,12 +32,11 @@
         android:layout_marginStart="8dp"
         android:layout_weight="1"
         android:ellipsize="end"
-        android:letterSpacing="0.04"
         android:maxLines="1"
         android:singleLine="true"
-        android:text="FAJR"
-        android:textSize="18sp"
-        style="@style/Display" />
+        android:text="@string/sample_prayer"
+        android:textSize="@dimen/text_prayer_row"
+        style="@style/PrayerName" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -51,12 +50,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="end"
-            android:letterSpacing="0.01"
             android:maxLines="1"
             android:singleLine="true"
-            android:text="05:12"
+            android:text="@string/sample_time"
             android:textSize="24sp"
-            style="@style/Display" />
+            style="@style/DisplayNumeric" />
 
         <TextView
             android:id="@+id/pStatus"
@@ -64,9 +62,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_marginTop="2dp"
-            android:text="NEXT"
-            android:textColor="@color/accent"
-            android:textSize="9sp"
+            android:text="@string/status_next"
+            android:textColor="@color/accent_text"
+            android:textSize="@dimen/text_status"
             android:visibility="invisible"
             style="@style/Label" />
     </LinearLayout>

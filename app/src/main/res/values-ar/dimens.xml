@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Alexandria has a taller Arabic body and more generous vertical ink
+         than Doto's dot glyphs. These sizes bring the Arabic UI back to the
+         same optical scale as the English UI instead of running larger. -->
+    <dimen name="text_label">8.5sp</dimen>
+    <dimen name="text_value">11sp</dimen>
+    <dimen name="text_button">10sp</dimen>
+    <dimen name="text_prayer_hero">22sp</dimen>
+    <dimen name="text_prayer_row">14sp</dimen>
+    <dimen name="text_dialog_title">17sp</dimen>
+    <dimen name="text_grace">14.5sp</dimen>
+    <dimen name="text_location">12sp</dimen>
+    <dimen name="text_location_min">10sp</dimen>
+    <dimen name="text_status">8sp</dimen>
+    <dimen name="text_segment">8.5sp</dimen>
+    <dimen name="text_date_max">8.5sp</dimen>
+    <dimen name="text_date_min">6.5sp</dimen>
+    <dimen name="text_hijri_max">8sp</dimen>
+    <dimen name="text_hijri_min">6sp</dimen>
+</resources>

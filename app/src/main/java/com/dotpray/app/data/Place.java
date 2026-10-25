@@ -39,15 +39,13 @@ public final class Place {
     }
 
     public boolean isCustom() {
-        return gps || "CURRENT LOCATION".equals(name);
+        return gps || CURRENT_LOCATION.equals(name);
     }
 
-    public String coordinates() {
-        return Format.coord(latitude, true) + " / " + Format.coord(longitude, false);
-    }
-
-    public String label() {
-        return country == null || country.isEmpty() ? name : name + ", " + country;
+    /** Coordinates with caller-supplied hemisphere letters. */
+    public String coordinates(String north, String south, String east, String west) {
+        return Format.coord(latitude, true, north, south, east, west)
+                + " / " + Format.coord(longitude, false, north, south, east, west);
     }
 
     /**
@@ -72,8 +70,12 @@ public final class Place {
                 value = value.substring(0, cut).trim();
             }
         }
-        return value.isEmpty() ? "CURRENT" : value;
+        return value.isEmpty() ? CURRENT_SHORT : value;
     }
+
+    /** Stable stored tokens for a GPS fix with no geocoder name. */
+    public static final String CURRENT_LOCATION = "CURRENT LOCATION";
+    public static final String CURRENT_SHORT = "CURRENT";
 
     /**
      * Nearest bundled city, or {@code null} when every preset is farther than

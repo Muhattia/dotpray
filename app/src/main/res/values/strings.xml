@@ -1,20 +1,247 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Dotpray</string>
-    <string name="widget_label">Prayer</string>
-    <string name="widget_description">Next prayer time and countdown, calculated on device.</string>
-    <string name="widget_small_description">Compact next prayer widget.</string>
+    <string name="app_name" translatable="false">Dotpray</string>
+    <string name="brand_wordmark" translatable="false">DOTPRAY</string>
+    <string name="widget_label">Prayer (wide)</string>
+    <string name="widget_small_label">Prayer (small)</string>
+    <string name="widget_minimal_label">Prayer (minimal)</string>
+    <string name="widget_description">Next prayer time, countdown and today\'s schedule, calculated on device. Defaults to 4×2 and can be resized.</string>
+    <string name="widget_small_description">Next prayer time and countdown with a progress rail. Defaults to 3×3 and can be resized.</string>
+    <string name="widget_minimal_description">Next prayer time and countdown without the progress rail. Defaults to 2×2 and can be resized.</string>
+
+    <string name="widget_settings_title">Widget Settings</string>
+    <string name="widget_settings_subtitle">APPEARANCE / THIS WIDGET ONLY</string>
+    <string name="widget_settings_preview">PREVIEW</string>
+    <string name="widget_settings_preview_a11y">Widget preview at %1$d%% transparency</string>
+    <string name="widget_settings_preview_mode">%1$d%% transparency</string>
+    <string name="widget_settings_transparency">TRANSPARENCY</string>
+    <string name="widget_transparency_solid">SOLID</string>
+    <string name="widget_transparency_clear">CLEAR</string>
+    <string name="widget_transparency_value">%1$d%%</string>
+    <string name="widget_transparency_desc" formatted="false">0% keeps the Dotpray card. 100% leaves type, times, and indicators over your wallpaper.</string>
+    <string name="widget_transparency_a11y">Transparency %1$d%%. 0%% is a solid card, 100%% is type only.</string>
+    <string name="widget_settings_note">The card fades; type, times, and indicators stay fully opaque. Applies only to this widget.</string>
+    <string name="widget_settings_apply">Apply</string>
+    <string name="widget_settings_cancel">Cancel</string>
 
     <string name="tagline">PRAYER CLOCK / OFFLINE</string>
-    <string name="next_prayer">Next prayer</string>
-    <string name="today">Today</string>
+    <string name="next_prayer">NEXT PRAYER</string>
+    <string name="prayer_now">PRAYER NOW</string>
+    <string name="today">TODAY</string>
+    <string name="tomorrow_label">TOMORROW</string>
+    <string name="now_label">NOW</string>
+    <string name="status_now">NOW</string>
+    <string name="status_next">NEXT</string>
+    <string name="in_label">IN</string>
     <string name="add_widget">Add widget</string>
     <string name="settings">Settings</string>
-    <string name="use_24h">24-hour clock</string>
-    <string name="prayer_alerts">Prayer alerts</string>
     <string name="close">Close</string>
     <string name="qibla">Qibla</string>
+    <string name="qibla_screen_subtitle">COMPASS</string>
+    <string name="qibla_open_compass">OPEN COMPASS</string>
+    <string name="qibla_bearing_label">QIBLA BEARING</string>
+    <string name="qibla_heading_label">HEADING</string>
+    <string name="qibla_offset_label">OFFSET</string>
+    <string name="qibla_turn_left">TURN LEFT</string>
+    <string name="qibla_turn_right">TURN RIGHT</string>
+    <string name="qibla_aligned">ALIGNED</string>
+    <string name="qibla_acquiring">ACQUIRING HEADING</string>
+    <string name="qibla_acquiring_short">ACQUIRING</string>
+    <string name="qibla_bearing_only">BEARING ONLY</string>
+    <string name="qibla_hold_flat">HOLD FLAT · TURN SLOWLY</string>
+    <string name="qibla_calibrate">CALIBRATE · MOVE PHONE IN A FIGURE 8</string>
+    <string name="qibla_no_sensor">NO COMPASS SENSOR · BEARING ONLY</string>
+    <string name="qibla_no_heading">NO HEADING · BEARING ONLY</string>
+    <string name="qibla_tolerance">TOLERANCE %1$s°</string>
+    <string name="qibla_default_tag">DEFAULT</string>
+    <string name="qibla_no_value" translatable="false">---°</string>
+    <string name="a11y_qibla_open">Open Qibla compass · bearing %1$s degrees</string>
+    <string name="qibla_a11y_aligned">Aligned with the Qibla</string>
+    <string name="a11y_back">Back</string>
     <string name="footer">Calculated on device · No ads · No tracking</string>
+    <string name="version_label">DOTPRAY 1.3</string>
+
+    <string name="clock_24h_tag">24H</string>
+    <string name="clock_12h_tag">12H</string>
+    <string name="clock_24h_setting">24-HOUR CLOCK</string>
+    <string name="since_prayer">SINCE %1$s %2$s</string>
+    <string name="progress_elapsed">%1$d%% ELAPSED</string>
+
+    <string name="am">AM</string>
+    <string name="pm">PM</string>
+    <string name="north">N</string>
+    <string name="south">S</string>
+    <string name="east">E</string>
+    <string name="west">W</string>
+    <string name="date_pattern" translatable="false">EEE / dd MMM yyyy</string>
+    <string name="widget_date_pattern" translatable="false">EEE d MMM</string>
+    <string name="location_detail">%1$s · %2$s</string>
+    <string name="location_pair">%1$s, %2$s</string>
+    <string name="current_location_label">CURRENT LOCATION</string>
+    <string name="place_current">Current location</string>
+    <string name="place_current_short">Current</string>
+    <string name="location_hint_gps">GPS FIX · TAP TO REFRESH</string>
+    <string name="location_hint_default">DEFAULT · TAP TO USE GPS</string>
+    <string name="location_hint_locating">LOCATING...</string>
+    <string name="a11y_location_refresh">Refresh location · %1$s</string>
+
+    <string name="prayer_fajr">Fajr</string>
+    <string name="prayer_dhuhr">Dhuhr</string>
+    <string name="prayer_asr">Asr</string>
+    <string name="prayer_maghrib">Maghrib</string>
+    <string name="prayer_isha">Isha</string>
+
+    <string name="app_language">App Language</string>
+    <string name="language_arabic" translatable="false">العربية</string>
+    <string name="language_english" translatable="false">English</string>
+
+    <string name="settings_title">SETTINGS</string>
+    <string name="settings_subtitle">PREFERENCES / STORED ON THIS DEVICE</string>
+    <string name="settings_version" translatable="false">1.3</string>
+    <string name="theme_label">THEME</string>
+    <string name="theme_system">SYSTEM</string>
+    <string name="theme_light">LIGHT</string>
+    <string name="theme_dark">DARK</string>
+    <string name="theme_applies">APPLIES TO THE APP AND ALL WIDGETS</string>
+    <string name="asr_label">ASR SHADOW</string>
+    <string name="asr_standard">STANDARD</string>
+    <string name="asr_hanafi">HANAFI</string>
+    <string name="display_label">DISPLAY</string>
+    <string name="alerts_label">PRAYER ALERTS</string>
+    <string name="notifications_blocked_hint">NOTIFICATIONS BLOCKED · TAP TO ALLOW</string>
+    <string name="widgets_label">WIDGETS</string>
+    <string name="widget_wide_button">WIDE 4×2</string>
+    <string name="widget_small_button">SMALL 3×3</string>
+    <string name="widget_minimal_button">MINIMAL 2×2</string>
+    <string name="widget_chooser_title">ADD A WIDGET</string>
+    <string name="widget_chooser_subtitle">THREE LAYOUTS · RESIZABLE</string>
+    <string name="widget_size_small">SMALL — 3×3</string>
+    <string name="widget_size_small_desc">Next prayer and countdown with a progress rail.</string>
+    <string name="widget_size_minimal">MINIMAL — 2×2</string>
+    <string name="widget_size_minimal_desc">Next prayer and countdown, no progress rail.</string>
+    <string name="widget_size_wide">WIDE — 4×2</string>
+    <string name="widget_size_wide_desc">Next prayer, countdown and today\'s times.</string>
+    <string name="about_label">ABOUT</string>
+    <string name="about_body">DOTPRAY 1.3 · EGYPTIAN GENERAL AUTHORITY OF SURVEY (FAJR 19.5° / ISHA 17.5°). PRAYER TIMES CALCULATED ON DEVICE. NO ACCOUNTS, NO ADS. TYPEFACES: DOTO AND ALEXANDRIA, SIL OPEN FONT LICENSE 1.1.</string>
+    <string name="about_credits">DEVELOPED BY MUHAMMAD ATTIA</string>
+
+    <string name="select_city">SELECT CITY</string>
+    <string name="offline_presets">OFFLINE PRESETS</string>
+
+    <!-- Design-time placeholders. Every one of these is replaced at runtime;
+         they exist so the layout previews read in the app's voice. -->
+    <string name="sample_now" translatable="false">NOW</string>
+    <string name="sample_clock" translatable="false">06:26 PM</string>
+    <string name="sample_city" translatable="false">CAIRO</string>
+    <string name="sample_date" translatable="false">THU / 22 OCT 2026</string>
+    <string name="sample_hijri" translatable="false">11 JUMADA I 1448</string>
+    <string name="sample_location" translatable="false">CAIRO</string>
+    <string name="sample_detail" translatable="false">CAIRO · 30.044°N / 31.236°E</string>
+    <string name="sample_index" translatable="false">01 / 05</string>
+    <string name="sample_prayer" translatable="false">MAGHRIB</string>
+    <string name="sample_time" translatable="false">18:42</string>
+    <string name="sample_countdown" translatable="false">01:25</string>
+    <string name="sample_since" translatable="false">SINCE ASR 15:51</string>
+    <string name="sample_progress" translatable="false">0% ELAPSED</string>
+    <string name="sample_coords" translatable="false">30.044°N / 31.236°E</string>
+    <string name="sample_qibla_place" translatable="false">CAIRO · 30.044°N / 31.236°E</string>
+    <string name="sample_qibla_bearing" translatable="false">136°</string>
+    <string name="sample_qibla_heading" translatable="false">214°</string>
+    <string name="sample_qibla_offset" translatable="false">078°</string>
+    <string name="sample_qibla_tolerance" translatable="false">TOLERANCE 3°</string>
+
     <string name="notification_channel_name">Prayer alerts</string>
     <string name="notification_channel_desc">Alerts when a prayer time enters</string>
+    <string name="notification_body">It\'s time for %1$s in %2$s.</string>
+
+    <string name="toast_allow_notifications">Allow notifications for Dotpray</string>
+    <string name="toast_alerts_on">Prayer alerts on</string>
+    <string name="toast_notifications_blocked">Notifications blocked</string>
+    <string name="toast_location_updated">Location updated</string>
+    <string name="toast_location_permission_denied">Location permission denied</string>
+    <string name="toast_location_unavailable">Location unavailable</string>
+    <string name="toast_no_location_fix">No location fix yet</string>
+    <string name="toast_turn_on_location">Turn on location services to use GPS</string>
+    <string name="toast_pin_widget">Long-press the home screen, open Widgets, choose Dotpray</string>
+    <string name="toast_open_notification_settings">Open system settings to allow notifications</string>
+
+    <string name="a11y_grace">%1$s now, %2$s</string>
+    <string name="a11y_grace_just_now">%1$s now, just after the Adhan</string>
+    <string name="a11y_next">%1$s at %2$s, %3$s</string>
+    <string name="duration_hours_minutes">IN %1$dH %2$dM</string>
+    <string name="duration_minutes">IN %1$dM</string>
+    <string name="duration_less_minute">IN &lt;1M</string>
+
+    <plurals name="elapsed_minutes">
+        <item quantity="one">%1$d minute since %2$s</item>
+        <item quantity="other">%1$d minutes since %2$s</item>
+    </plurals>
+    <plurals name="elapsed_minutes_compact">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+    <string name="elapsed_on">since %1$s</string>
+
+    <!-- Bundled cities and countries. Saved place records keep the canonical
+         English names so existing preferences continue to resolve. -->
+    <string name="place_city_makkah">Makkah</string>
+    <string name="place_city_madinah">Madinah</string>
+    <string name="place_city_london">London</string>
+    <string name="place_city_istanbul">Istanbul</string>
+    <string name="place_city_dubai">Dubai</string>
+    <string name="place_city_doha">Doha</string>
+    <string name="place_city_muscat">Muscat</string>
+    <string name="place_city_cairo">Cairo</string>
+    <string name="place_city_lagos">Lagos</string>
+    <string name="place_city_nairobi">Nairobi</string>
+    <string name="place_city_cape_town">Cape Town</string>
+    <string name="place_city_karachi">Karachi</string>
+    <string name="place_city_lahore">Lahore</string>
+    <string name="place_city_delhi">Delhi</string>
+    <string name="place_city_dhaka">Dhaka</string>
+    <string name="place_city_jakarta">Jakarta</string>
+    <string name="place_city_kuala_lumpur">Kuala Lumpur</string>
+    <string name="place_city_singapore">Singapore</string>
+    <string name="place_city_bangkok">Bangkok</string>
+    <string name="place_city_tokyo">Tokyo</string>
+    <string name="place_city_sydney">Sydney</string>
+    <string name="place_city_melbourne">Melbourne</string>
+    <string name="place_city_new_york">New York</string>
+    <string name="place_city_chicago">Chicago</string>
+    <string name="place_city_toronto">Toronto</string>
+    <string name="place_city_los_angeles">Los Angeles</string>
+    <string name="place_city_paris">Paris</string>
+    <string name="place_city_berlin">Berlin</string>
+    <string name="place_city_amsterdam">Amsterdam</string>
+    <string name="place_city_madrid">Madrid</string>
+    <string name="place_city_moscow">Moscow</string>
+    <string name="place_city_stockholm">Stockholm</string>
+
+    <string name="place_country_sa">SA</string>
+    <string name="place_country_uk">UK</string>
+    <string name="place_country_tr">TR</string>
+    <string name="place_country_ae">AE</string>
+    <string name="place_country_qa">QA</string>
+    <string name="place_country_om">OM</string>
+    <string name="place_country_eg">EG</string>
+    <string name="place_country_ng">NG</string>
+    <string name="place_country_ke">KE</string>
+    <string name="place_country_za">ZA</string>
+    <string name="place_country_pk">PK</string>
+    <string name="place_country_in">IN</string>
+    <string name="place_country_bd">BD</string>
+    <string name="place_country_id">ID</string>
+    <string name="place_country_my">MY</string>
+    <string name="place_country_sg">SG</string>
+    <string name="place_country_th">TH</string>
+    <string name="place_country_jp">JP</string>
+    <string name="place_country_au">AU</string>
+    <string name="place_country_us">US</string>
+    <string name="place_country_ca">CA</string>
+    <string name="place_country_fr">FR</string>
+    <string name="place_country_de">DE</string>
+    <string name="place_country_nl">NL</string>
+    <string name="place_country_es">ES</string>
+    <string name="place_country_ru">RU</string>
+    <string name="place_country_se">SE</string>
 </resources>

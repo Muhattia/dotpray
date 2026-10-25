@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Text sizes live here so the Arabic configuration can tune visual
+         weight without touching every layout. -->
+    <dimen name="text_label">10sp</dimen>
+    <dimen name="text_value">13sp</dimen>
+    <dimen name="text_button">12sp</dimen>
+    <dimen name="text_prayer_hero">30sp</dimen>
+    <dimen name="text_prayer_row">18sp</dimen>
+    <dimen name="text_dialog_title">21sp</dimen>
+    <dimen name="text_grace">18sp</dimen>
+    <dimen name="text_location">15sp</dimen>
+    <dimen name="text_location_min">11sp</dimen>
+    <dimen name="text_status">9sp</dimen>
+    <dimen name="text_segment">10sp</dimen>
+    <dimen name="text_date_max">10sp</dimen>
+    <dimen name="text_date_min">7sp</dimen>
+    <dimen name="text_hijri_max">9sp</dimen>
+    <dimen name="text_hijri_min">6.5sp</dimen>
+</resources>

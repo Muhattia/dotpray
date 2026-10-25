@@ -33,7 +33,7 @@
     </style>
 
     <style name="Label">
-        <item name="android:textSize">10sp</item>
+        <item name="android:textSize">@dimen/text_label</item>
         <item name="android:fontFamily">@font/doto_bold</item>
         <item name="android:textColor">@color/fg_dim</item>
         <item name="android:letterSpacing">0.18</item>
@@ -51,7 +51,7 @@
     </style>
 
     <style name="Value">
-        <item name="android:textSize">13sp</item>
+        <item name="android:textSize">@dimen/text_value</item>
         <item name="android:fontFamily">@font/doto_regular</item>
         <item name="android:textColor">@color/fg</item>
         <item name="android:letterSpacing">0.06</item>
@@ -70,10 +70,49 @@
         <item name="android:includeFontPadding">false</item>
     </style>
 
+    <!-- Numeric fields keep Doto in both languages: the prayer times and the
+         countdown are part of the app's identity, not translatable copy. -->
+    <style name="DisplayNumeric">
+        <item name="android:fontFamily">@font/doto_bold</item>
+        <item name="android:textColor">@color/fg</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="ValueNumeric">
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">@font/doto_regular</item>
+        <item name="android:textColor">@color/fg</item>
+        <item name="android:letterSpacing">0.06</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="LabelNumeric">
+        <item name="android:textSize">10sp</item>
+        <item name="android:fontFamily">@font/doto_bold</item>
+        <item name="android:textColor">@color/fg_dim</item>
+        <item name="android:letterSpacing">0.18</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="PrayerName">
+        <item name="android:fontFamily">@font/doto_bold</item>
+        <item name="android:textColor">@color/fg</item>
+        <item name="android:letterSpacing">0.04</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="SettingsTitle">
+        <item name="android:fontFamily">@font/doto_bold</item>
+        <item name="android:textColor">@color/fg</item>
+        <item name="android:letterSpacing">0.04</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
     <style name="ButtonPill">
         <item name="android:background">@drawable/bg_pill_white</item>
         <item name="android:textColor">@color/bg</item>
-        <item name="android:textSize">12sp</item>
+        <item name="android:textSize">@dimen/text_button</item>
         <item name="android:fontFamily">@font/doto_bold</item>
         <item name="android:letterSpacing">0.14</item>
         <item name="android:textAllCaps">true</item>

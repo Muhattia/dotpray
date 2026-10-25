@@ -3,25 +3,23 @@
 
 Outputs:
   aso/screenshots/01-prayer-times.png ... 05-private.png   (1080x1920)
-  aso/screenshots/06-team.png                              (1080x1920)
   aso/graphics/feature-graphic-1024x500.png
   aso/graphics/app-icon-512.png
 
-The phone screenshots are composed from the layout-accurate previews in
-preview/. They are marketing renders, not device captures.
+The phone screenshots are composed from the design previews in preview/.
+They are marketing renders, not device captures.
 """
 from pathlib import Path
 import math
 import textwrap
 
-from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
 PREVIEW = ROOT / "preview"
 OUT = ROOT / "aso"
 SHOTS = OUT / "screenshots"
 GFX = OUT / "graphics"
-TEAM = OUT / "team"
 FONT_DIR = ROOT / "app" / "src" / "main" / "res" / "font"
 
 W, H = 1080, 1920
@@ -34,7 +32,7 @@ LINE = (31, 31, 31)
 LINE_SOFT = (20, 20, 20)
 FG = (244, 244, 242)
 DIM = (142, 142, 142)
-FAINT = (86, 86, 86)
+FAINT = (118, 118, 118)
 RED = (215, 25, 33)
 RED_DARK = (122, 18, 25)
 
@@ -43,7 +41,7 @@ LIGHT_PANEL = (247, 247, 247)
 LIGHT_LINE = (220, 220, 220)
 LIGHT_FG = (10, 10, 10)
 LIGHT_DIM = (94, 94, 94)
-LIGHT_FAINT = (138, 138, 138)
+LIGHT_FAINT = (118, 118, 118)
 
 
 def font(weight, size):
@@ -164,7 +162,7 @@ def shot_prayer_times():
     label(draw, M, 62, "DOTPRAY / PRAYER CLOCK")
     draw_lines(draw, (M, 104), ["PRAYER TIMES,", "WITHOUT THE NOISE."],
                F_BLACK, FG, 82)
-    sub = wrap(draw, "The next prayer, a live countdown, and the full day — on one quiet screen.",
+    sub = wrap(draw, "The next prayer, a countdown, and the full day — on one quiet screen.",
                F_BODY, 940)
     draw_lines(draw, (M, 286), sub, F_BODY, DIM, 35)
     app = Image.open(PREVIEW / "app-screen.png").convert("RGB")
@@ -179,10 +177,10 @@ def shot_countdown():
     draw = ImageDraw.Draw(img)
     dot_field(draw, W, H)
     label(draw, M, 62, "DOTPRAY / NEXT PRAYER")
-    draw_lines(draw, (M, 104), ["EVERY SECOND", "COUNTS."], F_BLACK, FG, 82)
+    draw_lines(draw, (M, 104), ["EVERY MINUTE", "COUNTS."], F_BLACK, FG, 82)
     # Red full stop, on the baseline of the second line.
     draw.text((M, 104 + 82), "COUNTS.", font=F_BLACK, fill=RED, anchor="la")
-    sub = wrap(draw, "A countdown that moves every second, with a rail from the last prayer.",
+    sub = wrap(draw, "A calm countdown, with a rail from the last prayer.",
                F_BODY, 940)
     draw_lines(draw, (M, 286), sub, F_BODY, DIM, 35)
 
@@ -194,7 +192,7 @@ def shot_countdown():
     y = 1250
     draw.line([M, y - 28, W - M, y - 28], fill=LINE, width=1)
     items = [
-        ("01", "LIVE SECONDS", "Ticks every second."),
+        ("01", "MINUTE PRECISE", "No seconds."),
         ("02", "ELAPSED RAIL", "Since the last prayer."),
         ("03", "FIVE PRAYERS", "The whole day."),
     ]
@@ -215,26 +213,31 @@ def shot_widgets():
     dot_field(draw, W, H)
     label(draw, M, 62, "DOTPRAY / HOME SCREEN")
     draw_lines(draw, (M, 104), ["YOUR NEXT PRAYER,", "AT A GLANCE."], F_BLACK, FG, 82)
-    sub = wrap(draw, "Two widget sizes: a wide 4×2 schedule or a compact 2×2 clock.",
+    sub = wrap(draw, "Three layouts: a wide 4×2 schedule, a small 3×3 rail, or a minimal 2×2 card.",
                F_BODY, 940)
     draw_lines(draw, (M, 286), sub, F_BODY, DIM, 35)
 
     wide = Image.open(PREVIEW / "widget-wide.png").convert("RGBA")
-    wide = wide.resize((900, 414), Image.Resampling.LANCZOS)
+    wide = wide.resize((900, 442), Image.Resampling.LANCZOS)
     wide_panel = Image.new("RGBA", wide.size, (0, 0, 0, 0))
     wide_panel.alpha_composite(wide)
     img.paste(wide_panel, (90, 430), wide_panel)
 
     small = Image.open(PREVIEW / "widget-small.png").convert("RGBA")
-    small = small.resize((340, 340), Image.Resampling.LANCZOS)
-    img.paste(small, (370, 930), small)
+    small = small.resize((300, 300), Image.Resampling.LANCZOS)
+    img.paste(small, (210, 940), small)
+
+    minimal = Image.open(PREVIEW / "widget-minimal.png").convert("RGBA")
+    minimal = minimal.resize((300, 300), Image.Resampling.LANCZOS)
+    img.paste(minimal, (570, 940), minimal)
 
     tracking_text(draw, (W / 2, 396), "4×2  /  WIDE", font("bold", 22), DIM, 3.2, anchor="ma")
-    tracking_text(draw, (W / 2, 894), "2×2  /  COMPACT", font("bold", 22), DIM, 3.2, anchor="ma")
+    tracking_text(draw, (360, 900), "3×3  /  SMALL", font("bold", 22), DIM, 3.2, anchor="ma")
+    tracking_text(draw, (720, 900), "2×2  /  MINIMAL", font("bold", 22), DIM, 3.2, anchor="ma")
 
     draw.line([M, 1370, W - M, 1370], fill=LINE, width=1)
     caption(draw, "ONE GLANCE. THE WHOLE DAY.", 1430, FG, 40, 1.2)
-    footer(draw, "RESIZES TO FIT  ·  FOLLOWS THE APP THEME")
+    footer(draw, "RESIZABLE  ·  FOLLOWS THE APP THEME")
     img.save(SHOTS / "03-widgets.png", optimize=True)
     return img
 
@@ -245,7 +248,7 @@ def shot_themes():
     dot_field(draw, W, H)
     label(draw, M, 62, "DOTPRAY / THEMES")
     draw_lines(draw, (M, 104), ["DARK. LIGHT.", "YOUR CHOICE."], F_BLACK, FG, 82)
-    sub = wrap(draw, "Follow the system, or keep it fixed. Both widgets follow.",
+    sub = wrap(draw, "Follow the system, or keep it fixed. All widgets follow.",
                F_BODY, 940)
     draw_lines(draw, (M, 286), sub, F_BODY, DIM, 35)
 
@@ -256,82 +259,8 @@ def shot_themes():
 
     tracking_text(draw, (275, 1768), "DARK", F_LABEL, DIM, 3.0, anchor="ma")
     tracking_text(draw, (805, 1768), "LIGHT", F_LABEL, DIM, 3.0, anchor="ma")
-    footer(draw, "SYSTEM  /  LIGHT  /  DARK  ·  BOTH WIDGETS FOLLOW", y=1824)
+    footer(draw, "SYSTEM  /  LIGHT  /  DARK  ·  ALL WIDGETS FOLLOW", y=1824)
     img.save(SHOTS / "04-themes.png", optimize=True)
-    return img
-
-
-def team_photo(path, crop=None, centering=(0.5, 0.5), size=452):
-    """Square, neutral-monochrome portraits that sit inside the dot-matrix system."""
-    im = Image.open(path).convert("RGB")
-    if crop:
-        im = im.crop(crop)
-    im = ImageOps.fit(im, (size, size), Image.Resampling.LANCZOS, centering=centering)
-    gray = ImageOps.grayscale(im)
-    gray = ImageOps.autocontrast(gray, cutoff=0.5)
-    gray = ImageEnhance.Contrast(gray).enhance(1.06)
-    gray = ImageEnhance.Sharpness(gray).enhance(1.08)
-    return ImageOps.colorize(gray, black=(7, 7, 7), white=(244, 244, 242)).convert("RGB")
-
-
-def shot_team():
-    img = Image.new("RGB", (W, H), BG)
-    draw = ImageDraw.Draw(img)
-    dot_field(draw, W, H)
-    label(draw, M, 62, "DOTPRAY / CREDITS")
-
-    icon = Image.open(PREVIEW / "app-icon.png").convert("RGBA").resize((140, 140), Image.Resampling.LANCZOS)
-    paste_rounded(img, icon, (M, 108), 22)
-    draw_lines(draw, (240, 104), ["TWO PEOPLE.", "ONE QUIET APP."], F_BLACK, FG, 82)
-    draw.text((240, 298), "Developed by Muhammad Attia.", font=F_BODY, fill=DIM, anchor="la")
-    draw.text((240, 335), "Original idea by Muhammad M. Hemdan.", font=F_BODY, fill=DIM, anchor="la")
-
-    size, gap, top = 452, 32, 432
-    x1, x2 = M, M + size + gap
-    label(draw, x1, 397, "01 / DEVELOPER", fill=RED)
-    label(draw, x2, 397, "02 / ORIGINAL IDEA", fill=RED)
-
-    p1 = team_photo(TEAM / "muhammad-attia.jpg", crop=(250, 0, 1750, 1500))
-    p2 = team_photo(TEAM / "muhammad-hemdan.png", centering=(0.5, 0.46))
-    for x, photo in ((x1, p1), (x2, p2)):
-        paste_rounded(img, photo, (x, top), 26)
-        draw.rounded_rectangle([x, top, x + size, top + size], radius=26,
-                               outline=(44, 44, 44), width=2)
-
-    draw.text((x1, 908), "MUHAMMAD ATTIA", font=font("black", 38), fill=FG, anchor="la")
-    draw.text((x2, 908), "MUHAMMAD M. HEMDAN", font=font("black", 38), fill=FG, anchor="la")
-    link_font = font("regular", 24)
-    draw.text((x1, 962), "github.com/Muhattia", font=link_font, fill=DIM, anchor="la")
-    draw.text((x2, 962), "github.com/karasudidntwakeup", font=link_font, fill=DIM, anchor="la")
-
-    draw.line([M, 1048, W - M, 1048], fill=LINE, width=1)
-    label(draw, M, 1082, "OPEN SOURCE / THE REPO")
-    draw.text((M, 1114), "github.com/Muhattia/dotpray",
-              font=font("black", 50), fill=FG, anchor="la")
-    draw.text((M, 1184), "Source code, releases, and issues — all public.",
-              font=F_BODY, fill=DIM, anchor="la")
-
-    # External-link arrow: the one deliberately non-typographic mark.
-    ax, ay = W - M - 48, 1128
-    draw.line([ax - 22, ay + 22, ax + 22, ay - 22], fill=RED, width=4)
-    draw.line([ax + 22, ay - 22, ax - 2, ay - 22], fill=RED, width=4)
-    draw.line([ax + 22, ay - 22, ax + 22, ay + 2], fill=RED, width=4)
-
-    py, ph = 1272, 184
-    draw.rounded_rectangle([M, py, W - M, py + ph], radius=22,
-                           fill=SURFACE, outline=LINE, width=1)
-    icon2 = Image.open(PREVIEW / "app-icon.png").convert("RGBA").resize((92, 92), Image.Resampling.LANCZOS)
-    paste_rounded(img, icon2, (M + 28, py + 34), 18)
-    draw.text((M + 146, py + 34), "DOTPRAY 1.2", font=font("black", 38), fill=FG, anchor="la")
-    tracking_text(draw, (M + 150, py + 92), "OFFLINE PRAYER CLOCK", F_LABEL, FAINT, 2.8)
-    tracking_text(draw, (W - M - 28, py + 50), "FREE", F_LABEL, RED, 3.0, anchor="ra")
-    tracking_text(draw, (W - M - 28, py + 84), "NO ADS", F_LABEL, DIM, 3.0, anchor="ra")
-    tracking_text(draw, (W - M - 28, py + 118), "NO TRACKING", F_LABEL, DIM, 3.0, anchor="ra")
-
-    tracking_text(draw, (W / 2, 1636), "TWO PEOPLE. ONE IDEA. NO NOISE.",
-                  font("black", 44), FG, 0.5, anchor="ma")
-    footer(draw, "DOTPRAY 1.2  ·  MADE BY TWO PEOPLE")
-    img.save(SHOTS / "06-team.png", optimize=True)
     return img
 
 
@@ -394,7 +323,7 @@ def feature_graphic():
     draw.text((x + 24, y + 54), "MAGHRIB", font=font("bold", 40), fill=FG, anchor="la")
     draw.text((x + 22, y + 100), "18:17", font=font("black", 96), fill=FG, anchor="la")
     tracking_text(draw, (x + 24, y + 208), "IN", F_LABEL, RED, 2.0)
-    draw.text((x + 58, y + 198), "01:04:55", font=font("regular", 30), fill=FG, anchor="la")
+    draw.text((x + 58, y + 198), "01:04", font=font("regular", 30), fill=FG, anchor="la")
     draw.line([x + 24, y + 250, x + cw - 24, y + 250], fill=(38, 38, 38), width=3)
     draw.line([x + 24, y + 250, x + 24 + (cw - 48) * 0.56, y + 250], fill=RED, width=5)
     draw.ellipse([x + 24 + (cw - 48) * 0.56 - 4, y + 246,
@@ -420,7 +349,6 @@ def main():
     shot_countdown()
     shot_widgets()
     shot_themes()
-    shot_team()
     shot_privacy()
     feature_graphic()
     app_icon()

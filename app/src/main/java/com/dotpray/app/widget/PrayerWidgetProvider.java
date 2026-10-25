@@ -9,8 +9,8 @@ import android.os.Bundle;
 import com.dotpray.app.alerts.PrayerAlarmScheduler;
 
 /**
- * Home screen widget showing the next prayer, a live countdown and the whole
- * day at a glance.
+ * Home screen widget showing the next prayer, a countdown and the whole day at
+ * a glance.
  */
 public class PrayerWidgetProvider extends AppWidgetProvider {
 
@@ -31,6 +31,17 @@ public class PrayerWidgetProvider extends AppWidgetProvider {
     }
 
     @Override
+    public void onDeleted(Context context, int[] appWidgetIds) {
+        WidgetPrefs.delete(context, appWidgetIds);
+    }
+
+    @Override
+    public void onRestored(Context context, int[] oldWidgetIds,
+                           int[] newWidgetIds) {
+        WidgetPrefs.restore(context, oldWidgetIds, newWidgetIds);
+    }
+
+    @Override
     public void onDisabled(Context context) {
         if (!WidgetTick.hasWidgets(context)) WidgetTick.cancel(context);
     }
@@ -45,6 +56,7 @@ public class PrayerWidgetProvider extends AppWidgetProvider {
 
         boolean needsRefresh = ACTION_REFRESH.equals(action)
                 || WidgetTick.ACTION.equals(action)
+                || WidgetTick.ACTION_GRACE.equals(action)
                 || Intent.ACTION_BOOT_COMPLETED.equals(action)
                 || Intent.ACTION_MY_PACKAGE_REPLACED.equals(action)
                 || Intent.ACTION_TIME_CHANGED.equals(action)

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -16,10 +17,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.style.RelativeSizeSpan;
 import android.view.LayoutInflater;
+import android.view.TouchDelegate;
 import android.view.View;
 import android.view.Window;
 import android.widget.LinearLayout;
@@ -32,26 +31,32 @@ import com.dotpray.app.alerts.PrayerAlarmScheduler;
 import com.dotpray.app.data.Format;
 import com.dotpray.app.data.LocalityResolver;
 import com.dotpray.app.data.Place;
+import com.dotpray.app.data.PlaceNames;
 import com.dotpray.app.data.PrayerPrefs;
 import com.dotpray.app.data.ThemeController;
+import com.dotpray.app.data.UiText;
 import com.dotpray.app.prayer.CalcMethod;
-import com.dotpray.app.prayer.Hijri;
+import com.dotpray.app.prayer.CompassMath;
+import com.dotpray.app.prayer.ElapsedText;
 import com.dotpray.app.prayer.Prayer;
 import com.dotpray.app.prayer.PrayerCalculator;
 import com.dotpray.app.prayer.PrayerClock;
+import com.dotpray.app.prayer.PrayerNames;
 import com.dotpray.app.prayer.Qibla;
 import com.dotpray.app.ui.DotFieldView;
 import com.dotpray.app.ui.ProgressLineView;
 import com.dotpray.app.ui.SettingsDialog;
+import com.dotpray.app.ui.WidgetSizeDialog;
+import com.dotpray.app.widget.MinimalPrayerWidgetProvider;
 import com.dotpray.app.widget.PrayerWidgetProvider;
 import com.dotpray.app.widget.SmallPrayerWidgetProvider;
+import com.dotpray.app.widget.WidgetModel;
 import com.dotpray.app.widget.WidgetUpdater;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 /** The single screen: next prayer, countdown, the day ahead, and the controls. */
@@ -70,14 +75,18 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
 
     private ScrollView scroll;
     private DotFieldView dotField;
+    private View cityButton;
     private TextView cityLabel;
     private TextView locationDetail;
     private TextView dateLabel;
     private TextView hijriLabel;
     private TextView clockValue;
     private TextView heroIndex;
+    private TextView nextHeader;
     private TextView nextName;
     private TextView nextTime;
+    private TextView graceMessage;
+    private View countdownRow;
     private TextView countdownValue;
     private TextView sinceLabel;
     private TextView progressLabel;
@@ -85,12 +94,14 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
     private TextView clockTag;
     private TextView locationValue;
     private TextView locationCoords;
-    private TextView qiblaValue;
+    private View qiblaTile;
+    private TextView qiblaTileValue;
     private TextView locationHint;
     private LinearLayout prayerList;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Runnable ticker;
+    private long lastTickMs;
     private SettingsDialog settingsDialog;
     private boolean pendingLocation;
     private boolean pendingAlerts;
@@ -159,14 +170,18 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
     private void bindViews() {
         scroll = findViewById(R.id.scroll);
         dotField = findViewById(R.id.dotField);
+        cityButton = findViewById(R.id.cityButton);
         cityLabel = findViewById(R.id.cityLabel);
         locationDetail = findViewById(R.id.locationDetail);
         dateLabel = findViewById(R.id.dateLabel);
         hijriLabel = findViewById(R.id.hijriLabel);
         clockValue = findViewById(R.id.clockValue);
         heroIndex = findViewById(R.id.heroIndex);
+        nextHeader = findViewById(R.id.nextHeader);
         nextName = findViewById(R.id.nextName);
         nextTime = findViewById(R.id.nextTime);
+        graceMessage = findViewById(R.id.graceMessage);
+        countdownRow = findViewById(R.id.countdownRow);
         countdownValue = findViewById(R.id.countdownValue);
         sinceLabel = findViewById(R.id.sinceLabel);
         progressLabel = findViewById(R.id.progressLabel);
@@ -174,19 +189,47 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
         clockTag = findViewById(R.id.clockTag);
         locationValue = findViewById(R.id.locationValue);
         locationCoords = findViewById(R.id.locationCoords);
-        qiblaValue = findViewById(R.id.qiblaValue);
+        qiblaTile = findViewById(R.id.tileQibla);
+        qiblaTileValue = findViewById(R.id.qiblaTileValue);
         locationHint = findViewById(R.id.locationHint);
         prayerList = findViewById(R.id.prayerList);
     }
 
     private void wireInteractions() {
-        findViewById(R.id.cityButton).setOnClickListener(v -> requestCurrentLocation());
+        cityButton.setOnClickListener(v -> requestCurrentLocation());
+        cityButton.setFocusable(true);
+        expandCityTouchTarget();
         findViewById(R.id.tileLocation).setOnClickListener(v -> requestCurrentLocation());
+        qiblaTile.setOnClickListener(v -> openQibla());
         findViewById(R.id.btnSettingsGhost).setOnClickListener(v -> openSettings());
-        findViewById(R.id.btnAddWidget).setOnClickListener(v -> pinWidget(true));
+        findViewById(R.id.btnAddWidget).setOnClickListener(v -> showWidgetSizes());
 
         scroll.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) ->
                 dotField.setScrollOffset(scrollY * 0.35f));
+    }
+
+    /**
+     * The location chip is deliberately compact, so extend its touch target to
+     * the 48 dp frame around it without changing how it looks.
+     */
+    private void expandCityTouchTarget() {
+        View touch = findViewById(R.id.cityTouch);
+        if (touch == null || cityButton == null) return;
+        // Recompute on every layout: rotation and long place names change the
+        // chip's width even though the activity is not recreated.
+        touch.addOnLayoutChangeListener((v, left, top, right, bottom,
+                                         oldLeft, oldTop, oldRight, oldBottom) ->
+                updateCityTouchDelegate(touch));
+        touch.post(() -> updateCityTouchDelegate(touch));
+    }
+
+    private void updateCityTouchDelegate(View touch) {
+        if (cityButton == null || touch.getHeight() <= 0) return;
+        Rect rect = new Rect();
+        cityButton.getHitRect(rect);
+        rect.top = 0;
+        rect.bottom = touch.getHeight();
+        touch.setTouchDelegate(new TouchDelegate(rect, cityButton));
     }
 
     private void applyInsets() {
@@ -210,7 +253,7 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
     // ── data ────────────────────────────────────────────────────────────
 
     private void refresh() {
-        Place place = prefs.getPlace();
+        Place place = prefs.syncGpsZone();
         snapshot = PrayerClock.snapshot(Instant.now(), place, CalcMethod.EGYPT, prefs.getAsr());
         render();
     }
@@ -218,78 +261,98 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
     private void render() {
         Place place = snapshot.place;
         boolean use24 = prefs.is24Hour();
+        WidgetModel model = WidgetModel.of(snapshot, System.currentTimeMillis());
+        String city = UiText.upper(this, PlaceNames.shortName(this, place));
+        // The location readouts name the place itself, not its country: the
+        // area is the useful part, and "Cairo, EG" only adds noise at a glance.
+        String placeName = PlaceNames.city(this, place.name);
+        String coordinates = UiText.coordinates(this, place);
 
-        cityLabel.setText(place.shortName().toUpperCase(Locale.US));
-        locationDetail.setText((place.label() + " \u00b7 " + place.coordinates())
-                .toUpperCase(Locale.US));
-        dateLabel.setText(DateTimeFormatter.ofPattern("EEE / dd MMM yyyy", Locale.US)
-                .format(snapshot.date).toUpperCase(Locale.US));
-        hijriLabel.setText(hijri(snapshot.date));
-        clockTag.setText(use24 ? "24H" : "12H");
+        cityLabel.setText(city);
+        cityButton.setContentDescription(getString(R.string.a11y_location_refresh,
+                placeName));
+        locationDetail.setText(UiText.upper(this, getString(
+                R.string.location_detail, placeName, coordinates)));
+        dateLabel.setText(UiText.date(this, snapshot.date));
+        hijriLabel.setText(UiText.hijri(this, snapshot.date, false));
+        clockTag.setText(getString(use24 ? R.string.clock_24h_tag : R.string.clock_12h_tag));
         updateClock();
 
+        nextHeader.setText(getString(model.grace
+                ? R.string.prayer_now : R.string.next_prayer));
         heroIndex.setText(String.format(Locale.US, "%02d / 05",
-                snapshot.next.prayer.ordinal() + 1));
-        nextName.setText(snapshot.next.prayer.label.toUpperCase(Locale.US));
-        nextTime.setText(timeText(snapshot.next.local, use24, 0.28f));
+                model.prayer.ordinal() + 1));
+        nextName.setText(PrayerNames.display(this, model.prayer));
+        nextTime.setText(UiText.timeText(this, model.entry.local, use24, 0.28f));
 
-        String sinceTime = use24 ? Format.time24(snapshot.previous.local)
-                : Format.time12(snapshot.previous.local) + " "
-                + Format.meridiem(snapshot.previous.local);
-        sinceLabel.setText("SINCE "
-                + snapshot.previous.prayer.label.toUpperCase(Locale.US) + " " + sinceTime);
+        sinceLabel.setText(getString(R.string.since_prayer,
+                PrayerNames.display(this, snapshot.previous.prayer),
+                UiText.time(this, snapshot.previous.local, use24)));
 
-        locationValue.setText(place.label().toUpperCase(Locale.US));
-        locationCoords.setText(place.coordinates());
-        locationHint.setText(place.gps
-                ? "GPS FIX · TAP TO REFRESH"
-                : "DEFAULT · TAP TO USE GPS");
-        double bearing = Qibla.bearing(place);
-        qiblaValue.setText(String.format(Locale.US, "QIBLA %.0f° %s", bearing, Format.cardinal(bearing)));
+        locationValue.setText(UiText.upper(this, placeName));
+        locationCoords.setText(coordinates);
+        updateLocationHint(place.gps);
+        int bearingDegrees = CompassMath.paddedDegrees(Qibla.bearing(place));
+        qiblaTileValue.setText(String.format(Locale.US, "%d°", bearingDegrees));
+        qiblaTile.setContentDescription(getString(R.string.a11y_qibla_open,
+                String.valueOf(bearingDegrees)));
 
-        renderPrayerList();
-        updateCountdown();
+        renderPrayerList(model);
+        updateCountdown(model);
     }
 
-    private void renderPrayerList() {
+    private void updateLocationHint(boolean gps) {
+        if (locationHint == null) return;
+        locationHint.setText(gps
+                ? R.string.location_hint_gps : R.string.location_hint_default);
+    }
+
+    private void showLocatingHint() {
+        if (locationHint == null) return;
+        locationHint.setText(R.string.location_hint_locating);
+    }
+
+    private void renderPrayerList(WidgetModel model) {
         prayerList.removeAllViews();
-        Instant now = Instant.now();
         Prayer[] prayers = Prayer.values();
 
         for (int i = 0; i < prayers.length; i++) {
             PrayerCalculator.Entry entry = snapshot.entry(prayers[i]);
             if (entry == null) continue;
 
-            boolean past = !entry.instant.isAfter(now);
-            boolean active = prayers[i] == snapshot.next.prayer
-                    && !snapshot.nextIsTomorrow;
-            int bottom = i == prayers.length - 1 && !snapshot.nextIsTomorrow
+            boolean past = !entry.instant.isAfter(Instant.ofEpochMilli(model.nowMs));
+            // Match the instant, not the name or date. An Isha from yesterday
+            // can still be inside its grace after midnight; that must not light
+            // today's Isha row.
+            boolean active = entry.instant.equals(model.entry.instant);
+            int bottom = i == prayers.length - 1 && !model.displayIsTomorrow
                     ? 0 : dp(8);
-            addPrayerRow(entry, i + 1, active, past, bottom);
+            addPrayerRow(entry, i + 1, active, past, bottom, model.grace && active);
         }
 
-        // After Isha the next prayer belongs to tomorrow. Keep today's five
-        // times visible, then show that Fajr explicitly instead of leaving the
-        // whole list without a lit "NEXT" row.
-        if (snapshot.nextIsTomorrow) {
+        // After the Isha grace the next prayer belongs to tomorrow. Keep
+        // today's five times visible, then show that Fajr explicitly instead
+        // of leaving the whole list without a lit row.
+        if (model.displayIsTomorrow) {
             TextView tomorrow = new TextView(this);
-            tomorrow.setText("TOMORROW");
+            tomorrow.setText(R.string.tomorrow_label);
             tomorrow.setTextAppearance(R.style.LabelFaint);
             LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT);
             labelParams.topMargin = dp(18);
             labelParams.bottomMargin = dp(8);
-            labelParams.leftMargin = dp(2);
+            labelParams.setMarginStart(dp(2));
             tomorrow.setLayoutParams(labelParams);
             prayerList.addView(tomorrow);
 
-            addPrayerRow(snapshot.next, 1, true, false, 0);
+            addPrayerRow(snapshot.next, 1, true, false, 0, false);
         }
     }
 
     private void addPrayerRow(PrayerCalculator.Entry entry, int indexNumber,
-                              boolean active, boolean past, int bottomMargin) {
+                              boolean active, boolean past, int bottomMargin,
+                              boolean now) {
         View row = LayoutInflater.from(this).inflate(R.layout.item_prayer, prayerList, false);
         View marker = row.findViewById(R.id.pMarker);
         TextView index = row.findViewById(R.id.pIndex);
@@ -298,28 +361,28 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
         TextView status = row.findViewById(R.id.pStatus);
 
         index.setText(String.format(Locale.US, "%02d", indexNumber));
-        name.setText(entry.prayer.label.toUpperCase(Locale.US));
-        time.setText(timeText(entry.local, prefs.is24Hour(), 0.5f));
+        name.setText(PrayerNames.display(this, entry.prayer));
+        time.setText(UiText.timeText(this, entry.local, prefs.is24Hour(), 0.5f));
 
         row.setBackgroundResource(active
                 ? R.drawable.bg_prayer_active
                 : R.drawable.bg_option);
 
         if (active) {
-            // A small dot and the NEXT label carry the state; the row keeps the
-            // same surface as the rest of the schedule so the red accent stays
-            // an indicator rather than a large block of colour.
+            // A small dot and the status label carry the state; the row keeps
+            // the same surface as the rest of the schedule so the red accent
+            // stays an indicator rather than a large block of colour.
             marker.setVisibility(View.VISIBLE);
             name.setTextColor(getColor(R.color.fg));
             time.setTextColor(getColor(R.color.fg));
-            index.setTextColor(getColor(R.color.accent));
+            index.setTextColor(getColor(R.color.accent_text));
             status.setVisibility(View.VISIBLE);
-            status.setText("NEXT");
+            status.setText(getString(now ? R.string.status_now : R.string.status_next));
         } else {
             marker.setVisibility(View.INVISIBLE);
             name.setTextColor(getColor(past ? R.color.fg_past : R.color.fg));
             time.setTextColor(getColor(past ? R.color.fg_past : R.color.fg));
-            index.setTextColor(getColor(R.color.fg_faint));
+            index.setTextColor(getColor(R.color.fg_dim));
             // Keep the status line's height reserved so every schedule row is
             // the same height; only its ink changes with the active state.
             status.setVisibility(View.INVISIBLE);
@@ -333,38 +396,30 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
 
     private void updateClock() {
         ZonedDateTime now = Instant.now().atZone(snapshot.place.zone());
-        clockValue.setText(Format.clockWithSeconds(now, prefs.is24Hour()));
+        clockValue.setText(UiText.timeText(this, now, prefs.is24Hour(), 0.75f));
     }
 
     private void updateCountdown() {
-        long nowMs = System.currentTimeMillis();
-        long remaining = snapshot.next.instant.toEpochMilli() - nowMs;
-        if (remaining < 0) remaining = 0;
-        // The red "IN" beside this value already labels the countdown.
-        countdownValue.setText(Format.duration(remaining));
-
-        float fraction = snapshot.progress(nowMs);
-        progress.setProgress(fraction);
-        progressLabel.setText(String.format(Locale.US, "%d%% ELAPSED",
-                Math.round(fraction * 100f)));
+        updateCountdown(WidgetModel.of(snapshot, System.currentTimeMillis()));
     }
 
-    private CharSequence timeText(java.time.ZonedDateTime time, boolean use24, float periodScale) {
-        if (use24) return Format.time24(time);
-        String base = Format.time12(time);
-        String period = Format.meridiem(time);
-        SpannableString text = new SpannableString(base + " " + period);
-        text.setSpan(new RelativeSizeSpan(periodScale), base.length() + 1, text.length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        return text;
-    }
-
-    private String hijri(java.time.LocalDate date) {
-        try {
-            return Hijri.from(date).label();
-        } catch (RuntimeException e) {
-            return "";
+    private void updateCountdown(WidgetModel model) {
+        if (model.grace) {
+            countdownRow.setVisibility(View.GONE);
+            graceMessage.setVisibility(View.VISIBLE);
+            graceMessage.setText(ElapsedText.full(this, model.elapsedMinutes,
+                    model.prayer));
+        } else {
+            graceMessage.setVisibility(View.GONE);
+            countdownRow.setVisibility(View.VISIBLE);
+            long remaining = model.entryEpochMs() - model.nowMs;
+            if (remaining < 0) remaining = 0;
+            // The red "IN" beside this value already labels the countdown.
+            countdownValue.setText(Format.duration(remaining));
         }
+
+        progress.setProgress(model.progress);
+        progressLabel.setText(UiText.progress(this, model.progress));
     }
 
     // ── ticking ─────────────────────────────────────────────────────────
@@ -396,21 +451,39 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
 
     private void startTicker() {
         stopTicker();
+        lastTickMs = System.currentTimeMillis();
         ticker = new Runnable() {
             @Override
             public void run() {
+                long nowMs = System.currentTimeMillis();
                 if (snapshot != null) {
-                    LocalDate today = Instant.now().atZone(snapshot.place.zone()).toLocalDate();
-                    long remaining = snapshot.next.instant.toEpochMilli()
-                            - System.currentTimeMillis();
-                    if (remaining <= 0 || !today.equals(snapshot.date)) {
+                    LocalDate today = Instant.ofEpochMilli(nowMs)
+                            .atZone(snapshot.place.zone()).toLocalDate();
+                    long remaining = snapshot.next.instant.toEpochMilli() - nowMs;
+                    boolean graceEnded = lastTickMs < snapshot.graceEnd
+                            && nowMs >= snapshot.graceEnd;
+                    boolean zoneChanged = snapshot.place.gps
+                            && !ZoneId.systemDefault().getId().equals(snapshot.place.zoneId);
+                    // A manual clock change can move time backwards without
+                    // crossing the next Adhan. The larger forward threshold
+                    // tolerates a delayed main-thread tick.
+                    boolean clockJumped = lastTickMs > 0L
+                            && (nowMs < lastTickMs - 2_000L
+                            || nowMs > lastTickMs + 120_000L);
+                    lastTickMs = nowMs;
+                    if (remaining <= 0 || graceEnded || zoneChanged || clockJumped
+                            || !today.equals(snapshot.date)) {
                         refresh();
                     } else {
                         updateClock();
                         updateCountdown();
                     }
+                } else {
+                    lastTickMs = nowMs;
                 }
-                handler.postDelayed(this, 1000L);
+                // The clock and countdown show minutes only, so wake the UI
+                // on the next minute boundary instead of once a second.
+                handler.postDelayed(this, 60_000L - (nowMs % 60_000L) + 100L);
             }
         };
         handler.post(ticker);
@@ -425,6 +498,10 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
         if (settingsDialog != null) settingsDialog.dismiss();
         settingsDialog = new SettingsDialog(this, this);
         settingsDialog.show();
+    }
+
+    private void openQibla() {
+        startActivity(new Intent(this, QiblaActivity.class));
     }
 
     // ── settings callbacks ──────────────────────────────────────────────
@@ -442,6 +519,20 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
         }
         // The bitmap widgets use the same preference, so repaint them before
         // the activity is recreated with the new configuration.
+        WidgetUpdater.updateAll(this);
+        recreate();
+    }
+
+    @Override
+    public void onLanguageChanged() {
+        if (settingsDialog != null) {
+            settingsDialog.dismiss();
+            settingsDialog = null;
+        }
+        // Repaint all widgets and retitle the notification channel before
+        // the activity comes back in the new locale. Preferences are stored
+        // application-wide, so recreation cannot lose the selection.
+        NotificationHelper.refreshChannel(this);
         WidgetUpdater.updateAll(this);
         recreate();
     }
@@ -469,18 +560,18 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
         if (!NotificationHelper.notificationsEnabled(this)) {
             prefs.setAlertsEnabled(false);
             if (settingsDialog != null) settingsDialog.setAlertsChecked(false);
-            toast("Allow notifications for Dotpray");
+            toast(getString(R.string.toast_allow_notifications));
             openNotificationSettings();
             return;
         }
         prefs.setAlertsEnabled(true);
         PrayerAlarmScheduler.reschedule(this);
-        toast("Prayer alerts on");
+        toast(getString(R.string.toast_alerts_on));
     }
 
     @Override
-    public void onAddWidget(boolean wide) {
-        pinWidget(wide);
+    public void onAddWidget(WidgetSizeDialog.Kind kind) {
+        pinWidget(kind);
     }
 
     // ── location ────────────────────────────────────────────────────────
@@ -544,11 +635,14 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
     }
 
     private void fetchLocation(boolean userInitiated) {
-        if (locationFetching) return;
+        if (locationFetching) {
+            if (userInitiated) showLocatingHint();
+            return;
+        }
 
         final LocationManager manager = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (manager == null) {
-            if (userInitiated) toast("Location unavailable");
+            if (userInitiated) toast(getString(R.string.toast_location_unavailable));
             return;
         }
 
@@ -579,7 +673,7 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
 
         locationTimeout = () -> {
             cleanupLocationFetch();
-            if (userInitiated) toast("No location fix yet");
+            if (userInitiated) toast(getString(R.string.toast_no_location_fix));
         };
 
         locationListener = new LocationListener() {
@@ -613,19 +707,20 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
 
             if (provider == null) {
                 cleanupLocationFetch();
-                if (userInitiated) toast("Turn on location services to use GPS");
+                if (userInitiated) toast(getString(R.string.toast_turn_on_location));
                 return;
             }
 
+            if (userInitiated) showLocatingHint();
             manager.requestLocationUpdates(provider, 0L, 0f, locationListener,
                     Looper.getMainLooper());
             handler.postDelayed(locationTimeout, 12_000L);
         } catch (SecurityException e) {
             cleanupLocationFetch();
-            if (userInitiated) toast("Location permission denied");
+            if (userInitiated) toast(getString(R.string.toast_location_permission_denied));
         } catch (IllegalArgumentException e) {
             cleanupLocationFetch();
-            if (userInitiated) toast("Turn on location services to use GPS");
+            if (userInitiated) toast(getString(R.string.toast_turn_on_location));
         }
     }
 
@@ -649,6 +744,10 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
         locationListener = null;
         locationManager = null;
         locationFetching = false;
+        if (prefs != null) {
+            Place place = prefs.getPlace();
+            updateLocationHint(place != null && place.gps);
+        }
     }
 
     private void useLocation(Location location, boolean announce) {
@@ -660,12 +759,12 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
         // geocoder refine it in the background. The widget shows this name, so
         // both passes go through applyChanges().
         Place near = Place.nearest(latitude, longitude, 150);
-        String name = near != null ? near.name : "CURRENT LOCATION";
+        String name = near != null ? near.name : Place.CURRENT_LOCATION;
         String country = near != null ? near.country : "";
         prefs.setPlace(new Place(name, country, latitude, longitude, zoneId, true));
         prefs.setLocationUpdatedAt(System.currentTimeMillis());
         applyChanges();
-        if (announce) toast("Location updated");
+        if (announce) toast(getString(R.string.toast_location_updated));
 
         LocalityResolver.resolve(this, latitude, longitude, (resolved, code) -> {
             if (isFinishing() || isDestroyed()) return;
@@ -694,9 +793,9 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
             if (settingsDialog != null) settingsDialog.setAlertsChecked(alertsOn);
             if (alertsOn) {
                 PrayerAlarmScheduler.reschedule(this);
-                toast("Prayer alerts on");
+                toast(getString(R.string.toast_alerts_on));
             } else {
-                toast("Notifications blocked");
+                toast(getString(R.string.toast_notifications_blocked));
             }
             pendingAlerts = false;
             return;
@@ -707,21 +806,38 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
             if (granted) {
                 fetchLocation(true);
             } else {
-                toast("Location permission denied");
+                toast(getString(R.string.toast_location_permission_denied));
             }
         }
     }
 
     // ── widgets ─────────────────────────────────────────────────────────
 
-    private void pinWidget(boolean wide) {
+    private void showWidgetSizes() {
+        WidgetSizeDialog.show(this, this::pinWidget);
+    }
+
+    private void pinWidget(WidgetSizeDialog.Kind kind) {
         AppWidgetManager manager = AppWidgetManager.getInstance(this);
-        ComponentName component = new ComponentName(this,
-                wide ? PrayerWidgetProvider.class : SmallPrayerWidgetProvider.class);
+        ComponentName component;
+        switch (kind) {
+            case MINIMAL:
+                component = new ComponentName(this, MinimalPrayerWidgetProvider.class);
+                break;
+            case SMALL:
+                component = new ComponentName(this, SmallPrayerWidgetProvider.class);
+                break;
+            case WIDE:
+            default:
+                component = new ComponentName(this, PrayerWidgetProvider.class);
+                break;
+        }
         if (manager.isRequestPinAppWidgetSupported()) {
-            manager.requestPinAppWidget(component, null, null);
+            if (!manager.requestPinAppWidget(component, null, null)) {
+                toast(getString(R.string.toast_pin_widget));
+            }
         } else {
-            toast("Long-press the home screen, open Widgets, choose Dotpray");
+            toast(getString(R.string.toast_pin_widget));
         }
     }
 
@@ -758,7 +874,7 @@ public class MainActivity extends Activity implements SettingsDialog.Callback {
                     .putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
             startActivity(intent);
         } catch (RuntimeException e) {
-            toast("Open system settings to allow notifications");
+            toast(getString(R.string.toast_open_notification_settings));
         }
     }
 

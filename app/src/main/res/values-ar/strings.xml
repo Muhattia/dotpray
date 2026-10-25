@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_label">الصلاة (ويدجت واسع)</string>
+    <string name="widget_small_label">الصلاة (ويدجت صغير)</string>
+    <string name="widget_minimal_label">الصلاة (ويدجت بسيط)</string>
+    <string name="widget_description">وقت الصلاة القادمة والعد التنازلي ومواقيت اليوم، محسوبة على الجهاز. الحجم الافتراضي 4×2 وقابل لتغيير الحجم.</string>
+    <string name="widget_small_description">وقت الصلاة القادمة والعد التنازلي مع شريط التقدم. الحجم الافتراضي 3×3 وقابل لتغيير الحجم.</string>
+    <string name="widget_minimal_description">وقت الصلاة القادمة والعد التنازلي دون شريط التقدم. الحجم الافتراضي 2×2 وقابل لتغيير الحجم.</string>
+
+    <string name="widget_settings_title">إعدادات الويدجت</string>
+    <string name="widget_settings_subtitle">المظهر / لهذا الويدجت فقط</string>
+    <string name="widget_settings_preview">معاينة</string>
+    <string name="widget_settings_preview_a11y">معاينة الويدجت عند شفافية %1$d%%</string>
+    <string name="widget_settings_preview_mode">شفافية %1$d%%</string>
+    <string name="widget_settings_transparency">الشفافية</string>
+    <string name="widget_transparency_solid">معتم</string>
+    <string name="widget_transparency_clear">شفاف</string>
+    <string name="widget_transparency_value">%1$d%%</string>
+    <string name="widget_transparency_desc" formatted="false">0% يحافظ على بطاقة دوتبراي، و100% يترك النص والأوقات والمؤشرات فوق خلفية الشاشة.</string>
+    <string name="widget_transparency_a11y">الشفافية %1$d%%. عند 0%% بطاقة معتمة، وعند 100%% نص فقط.</string>
+    <string name="widget_settings_note">تتلاشى البطاقة وتبقى الكتابة والأوقات والمؤشرات معتمة تمامًا. يُطبّق على هذا الويدجت فقط.</string>
+    <string name="widget_settings_apply">تطبيق</string>
+    <string name="widget_settings_cancel">إلغاء</string>
+
+    <string name="tagline">ساعة الصلاة / دون اتصال</string>
+    <string name="next_prayer">الصلاة القادمة</string>
+    <string name="prayer_now">الصلاة الآن</string>
+    <string name="today">اليوم</string>
+    <string name="tomorrow_label">غدًا</string>
+    <string name="now_label">الآن</string>
+    <string name="status_now">الآن</string>
+    <string name="status_next">التالية</string>
+    <string name="in_label">بعد</string>
+    <string name="add_widget">أضف ويدجت</string>
+    <string name="settings">الإعدادات</string>
+    <string name="close">إغلاق</string>
+    <string name="qibla">القبلة</string>
+    <string name="qibla_screen_subtitle">بوصلة</string>
+    <string name="qibla_open_compass">افتح البوصلة</string>
+    <string name="qibla_bearing_label">اتجاه القبلة</string>
+    <string name="qibla_heading_label">اتجاه الهاتف</string>
+    <string name="qibla_offset_label">الفرق</string>
+    <string name="qibla_turn_left">انعطف يسارًا</string>
+    <string name="qibla_turn_right">انعطف يمينًا</string>
+    <string name="qibla_aligned">متوافق</string>
+    <string name="qibla_acquiring">جارٍ قراءة الاتجاه</string>
+    <string name="qibla_acquiring_short">جارٍ القراءة</string>
+    <string name="qibla_bearing_only">القبلة فقط</string>
+    <string name="qibla_hold_flat">أمسك الهاتف أفقيًا · أدره ببطء</string>
+    <string name="qibla_calibrate">معايرة · حرّك الهاتف على شكل 8</string>
+    <string name="qibla_no_sensor">لا يوجد حساس بوصلة · القبلة فقط</string>
+    <string name="qibla_no_heading">لا يوجد اتجاه · القبلة فقط</string>
+    <string name="qibla_tolerance">دقة %1$s°</string>
+    <string name="qibla_default_tag">افتراضي</string>
+    <string name="a11y_qibla_open">افتح بوصلة القبلة · الاتجاه %1$s درجة</string>
+    <string name="qibla_a11y_aligned">تمت المحاذاة مع القبلة</string>
+    <string name="a11y_back">رجوع</string>
+    <string name="footer">يُحسب على الجهاز · بلا إعلانات · بلا تتبّع</string>
+    <string name="version_label">دوتبراي 1.3</string>
+
+    <string name="clock_24h_tag">24 س</string>
+    <string name="clock_12h_tag">12 س</string>
+    <string name="clock_24h_setting">ساعة 24</string>
+    <string name="since_prayer">منذ %1$s %2$s</string>
+    <string name="progress_elapsed">مضى %1$d%%</string>
+
+    <string name="am">ص</string>
+    <string name="pm">م</string>
+    <string name="north">ش</string>
+    <string name="south">ج</string>
+    <string name="east">ق</string>
+    <string name="west">غ</string>
+    <string name="location_detail">%1$s · %2$s</string>
+    <string name="location_pair">%1$s، %2$s</string>
+    <string name="current_location_label">الموقع الحالي</string>
+    <string name="place_current">الموقع الحالي</string>
+    <string name="place_current_short">الموقع الحالي</string>
+    <string name="location_hint_gps">تحديد GPS · اضغط للتحديث</string>
+    <string name="location_hint_default">افتراضي · اضغط لتحديد موقعك</string>
+    <string name="location_hint_locating">جارٍ تحديد الموقع...</string>
+    <string name="a11y_location_refresh">تحديث الموقع · %1$s</string>
+
+    <string name="prayer_fajr">الفجر</string>
+    <string name="prayer_dhuhr">الظهر</string>
+    <string name="prayer_asr">العصر</string>
+    <string name="prayer_maghrib">المغرب</string>
+    <string name="prayer_isha">العشاء</string>
+
+    <string name="app_language">لغة التطبيق</string>
+
+    <string name="settings_title">الإعدادات</string>
+    <string name="settings_subtitle">التفضيلات / محفوظة على هذا الجهاز</string>
+    <string name="theme_label">المظهر</string>
+    <string name="theme_system">النظام</string>
+    <string name="theme_light">فاتح</string>
+    <string name="theme_dark">داكن</string>
+    <string name="theme_applies">يُطبّق على التطبيق وجميع الويدجتات</string>
+    <string name="asr_label">ظل العصر</string>
+    <string name="asr_standard">الجمهور</string>
+    <string name="asr_hanafi">الحنفي</string>
+    <string name="display_label">العرض</string>
+    <string name="alerts_label">تنبيهات الصلاة</string>
+    <string name="notifications_blocked_hint">التنبيهات محظورة · اضغط للسماح</string>
+    <string name="widgets_label">الويدجتات</string>
+    <string name="widget_wide_button">واسع 4×2</string>
+    <string name="widget_small_button">صغير 3×3</string>
+    <string name="widget_minimal_button">بسيط 2×2</string>
+    <string name="widget_chooser_title">أضف ويدجت</string>
+    <string name="widget_chooser_subtitle">ثلاثة تصاميم · قابلة لتغيير الحجم</string>
+    <string name="widget_size_small">صغير — 3×3</string>
+    <string name="widget_size_small_desc">الصلاة القادمة والعد التنازلي مع شريط التقدم.</string>
+    <string name="widget_size_minimal">بسيط — 2×2</string>
+    <string name="widget_size_minimal_desc">الصلاة القادمة والعد التنازلي دون شريط التقدم.</string>
+    <string name="widget_size_wide">واسع — 4×2</string>
+    <string name="widget_size_wide_desc">الصلاة القادمة والعد التنازلي ومواقيت اليوم.</string>
+    <string name="about_label">حول</string>
+    <string name="about_body">دوتبراي 1.3 · الهيئة المصرية العامة للمساحة (الفجر 19.5° / العشاء 17.5°). تُحسب أوقات الصلاة على الجهاز. بلا حسابات، بلا إعلانات. الخطوط: DOTO و ALEXANDRIA، رخصة SIL المفتوحة للخطوط 1.1.</string>
+    <string name="about_credits">تطوير: محمد عطية</string>
+
+    <string name="select_city">اختر المدينة</string>
+    <string name="offline_presets">مواقع محفوظة دون اتصال</string>
+
+    <string name="notification_channel_name">تنبيهات الصلاة</string>
+    <string name="notification_channel_desc">تنبيهات عند دخول وقت الصلاة</string>
+    <string name="notification_body">حان وقت %1$s في %2$s.</string>
+
+    <string name="toast_allow_notifications">اسمح بالإشعارات لتطبيق Dotpray</string>
+    <string name="toast_alerts_on">تنبيهات الصلاة مفعّلة</string>
+    <string name="toast_notifications_blocked">الإشعارات محظورة</string>
+    <string name="toast_location_updated">تم تحديث الموقع</string>
+    <string name="toast_location_permission_denied">تم رفض إذن الموقع</string>
+    <string name="toast_location_unavailable">الموقع غير متاح</string>
+    <string name="toast_no_location_fix">لا يوجد تحديد موقع بعد</string>
+    <string name="toast_turn_on_location">شغّل خدمة الموقع لاستخدام GPS</string>
+    <string name="toast_pin_widget">اضغط مطولًا على الشاشة الرئيسية، وافتح الويدجتات، واختر Dotpray</string>
+    <string name="toast_open_notification_settings">افتح إعدادات النظام للسماح بالإشعارات</string>
+
+    <string name="a11y_grace">%1$s الآن، %2$s</string>
+    <string name="a11y_grace_just_now">%1$s الآن، بعد الأذان مباشرة</string>
+    <string name="a11y_next">%1$s عند %2$s، %3$s</string>
+    <string name="duration_hours_minutes">بعد %1$d س %2$d د</string>
+    <string name="duration_minutes">بعد %1$d د</string>
+    <string name="duration_less_minute">بعد أقل من دقيقة</string>
+
+    <!-- %1$d is the minute count and %2$s is the prayer name. The zero, one
+         and two forms do not print a numeral, but still take the name from
+         %2$s so both arguments keep the same positions as the English
+         plural and as the few/many/other forms. -->
+    <plurals name="elapsed_minutes">
+        <item quantity="zero">مرّت لحظات على %2$s</item>
+        <item quantity="one">مرّت دقيقة واحدة على %2$s</item>
+        <item quantity="two">مرّت دقيقتان على %2$s</item>
+        <item quantity="few">مرّت %1$d دقائق على %2$s</item>
+        <item quantity="many">مرّت %1$d دقيقة على %2$s</item>
+        <item quantity="other">مرّت %1$d دقيقة على %2$s</item>
+    </plurals>
+    <plurals name="elapsed_minutes_compact">
+        <item quantity="zero">مرّت لحظات</item>
+        <item quantity="one">مرّت دقيقة واحدة</item>
+        <item quantity="two">مرّت دقيقتان</item>
+        <item quantity="few">مرّت %1$d دقائق</item>
+        <item quantity="many">مرّت %1$d دقيقة</item>
+        <item quantity="other">مرّت %1$d دقيقة</item>
+    </plurals>
+    <string name="elapsed_on">على %1$s</string>
+
+    <string name="place_city_makkah">مكة المكرمة</string>
+    <string name="place_city_madinah">المدينة المنورة</string>
+    <string name="place_city_london">لندن</string>
+    <string name="place_city_istanbul">إسطنبول</string>
+    <string name="place_city_dubai">دبي</string>
+    <string name="place_city_doha">الدوحة</string>
+    <string name="place_city_muscat">مسقط</string>
+    <string name="place_city_cairo">القاهرة</string>
+    <string name="place_city_lagos">لاغوس</string>
+    <string name="place_city_nairobi">نيروبي</string>
+    <string name="place_city_cape_town">كيب تاون</string>
+    <string name="place_city_karachi">كراتشي</string>
+    <string name="place_city_lahore">لاهور</string>
+    <string name="place_city_delhi">دلهي</string>
+    <string name="place_city_dhaka">دكا</string>
+    <string name="place_city_jakarta">جاكرتا</string>
+    <string name="place_city_kuala_lumpur">كوالالمبور</string>
+    <string name="place_city_singapore">سنغافورة</string>
+    <string name="place_city_bangkok">بانكوك</string>
+    <string name="place_city_tokyo">طوكيو</string>
+    <string name="place_city_sydney">سيدني</string>
+    <string name="place_city_melbourne">ملبورن</string>
+    <string name="place_city_new_york">نيويورك</string>
+    <string name="place_city_chicago">شيكاغو</string>
+    <string name="place_city_toronto">تورونتو</string>
+    <string name="place_city_los_angeles">لوس أنجلوس</string>
+    <string name="place_city_paris">باريس</string>
+    <string name="place_city_berlin">برلين</string>
+    <string name="place_city_amsterdam">أمستردام</string>
+    <string name="place_city_madrid">مدريد</string>
+    <string name="place_city_moscow">موسكو</string>
+    <string name="place_city_stockholm">ستوكهولم</string>
+
+    <string name="place_country_sa">السعودية</string>
+    <string name="place_country_uk">المملكة المتحدة</string>
+    <string name="place_country_tr">تركيا</string>
+    <string name="place_country_ae">الإمارات</string>
+    <string name="place_country_qa">قطر</string>
+    <string name="place_country_om">عُمان</string>
+    <string name="place_country_eg">مصر</string>
+    <string name="place_country_ng">نيجيريا</string>
+    <string name="place_country_ke">كينيا</string>
+    <string name="place_country_za">جنوب أفريقيا</string>
+    <string name="place_country_pk">باكستان</string>
+    <string name="place_country_in">الهند</string>
+    <string name="place_country_bd">بنغلاديش</string>
+    <string name="place_country_id">إندونيسيا</string>
+    <string name="place_country_my">ماليزيا</string>
+    <string name="place_country_sg">سنغافورة</string>
+    <string name="place_country_th">تايلاند</string>
+    <string name="place_country_jp">اليابان</string>
+    <string name="place_country_au">أستراليا</string>
+    <string name="place_country_us">الولايات المتحدة</string>
+    <string name="place_country_ca">كندا</string>
+    <string name="place_country_fr">فرنسا</string>
+    <string name="place_country_de">ألمانيا</string>
+    <string name="place_country_nl">هولندا</string>
+    <string name="place_country_es">إسبانيا</string>
+    <string name="place_country_ru">روسيا</string>
+    <string name="place_country_se">السويد</string>
+</resources>

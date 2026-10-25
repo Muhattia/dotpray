@@ -5,7 +5,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.os.Bundle;
 
-/** Compact 2x2 variant of the prayer widget. */
+/** Compact variant of the prayer widget, defaulting to 3x3. */
 public class SmallPrayerWidgetProvider extends AppWidgetProvider {
 
     @Override
@@ -19,6 +19,17 @@ public class SmallPrayerWidgetProvider extends AppWidgetProvider {
     public void onAppWidgetOptionsChanged(Context context, AppWidgetManager manager,
                                           int id, Bundle options) {
         WidgetUpdater.updateSmall(context, manager, new int[]{id});
+    }
+
+    @Override
+    public void onDeleted(Context context, int[] appWidgetIds) {
+        WidgetPrefs.delete(context, appWidgetIds);
+    }
+
+    @Override
+    public void onRestored(Context context, int[] oldWidgetIds,
+                           int[] newWidgetIds) {
+        WidgetPrefs.restore(context, oldWidgetIds, newWidgetIds);
     }
 
     @Override

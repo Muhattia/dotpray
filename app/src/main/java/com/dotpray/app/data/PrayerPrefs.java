@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 
 import com.dotpray.app.prayer.AsrMethod;
 
+import java.time.ZoneId;
+
 /** Everything the app remembers. All of it stays on the device. */
 public class PrayerPrefs {
 
@@ -20,6 +22,7 @@ public class PrayerPrefs {
     private static final String KEY_ALERTS = "alerts";
     private static final String KEY_24H = "clock24";
     private static final String KEY_THEME = "theme";
+    private static final String KEY_LANGUAGE = "language";
     private static final String KEY_LOCATION_ASKED = "location_asked";
     private static final String KEY_LOCATION_AT = "location_at";
 
@@ -55,6 +58,22 @@ public class PrayerPrefs {
                 .apply();
     }
 
+    /**
+     * Keeps a GPS fix on the phone's current zone after a time-zone change.
+     * City choices keep their own zone, because they are not the device's
+     * location. Returns the place that should be used for the next calculation.
+     */
+    public Place syncGpsZone() {
+        Place place = getPlace();
+        if (!place.gps) return place;
+        ZoneId system = ZoneId.systemDefault();
+        if (system.getId().equals(place.zoneId)) return place;
+        Place updated = new Place(place.name, place.country, place.latitude,
+                place.longitude, system.getId(), true);
+        setPlace(updated);
+        return updated;
+    }
+
     /** True once the first-launch location prompt has been shown. */
     public boolean hasAskedForLocation() {
         return sp.getBoolean(KEY_LOCATION_ASKED, false);
@@ -82,6 +101,15 @@ public class PrayerPrefs {
     public void setThemeMode(int mode) {
         if (mode < THEME_SYSTEM || mode > THEME_DARK) mode = THEME_SYSTEM;
         sp.edit().putInt(KEY_THEME, mode).apply();
+    }
+
+    /** The explicitly selected app language; English by default. */
+    public String getLanguage() {
+        return Language.normalize(sp.getString(KEY_LANGUAGE, Language.DEFAULT));
+    }
+
+    public void setLanguage(String language) {
+        sp.edit().putString(KEY_LANGUAGE, Language.normalize(language)).apply();
     }
 
     public AsrMethod getAsr() {

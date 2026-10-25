@@ -45,4 +45,18 @@ public final class Api30 {
         out[0] = bars.top;
         out[1] = bars.bottom;
     }
+
+    /**
+     * Four-sided variant for screens that meet a cutout in landscape.
+     *
+     * @param out receives {left, top, right, bottom} in pixels
+     */
+    public static void systemBarInsets4(WindowInsets insets, int[] out) {
+        Insets bars = insets.getInsets(
+                WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+        out[0] = bars.left;
+        out[1] = bars.top;
+        out[2] = bars.right;
+        out[3] = bars.bottom;
+    }
 }

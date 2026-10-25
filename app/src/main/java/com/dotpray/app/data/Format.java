@@ -1,67 +1,51 @@
 package com.dotpray.app.data;
 
+import java.time.ZonedDateTime;
 import java.util.Locale;
 
-/** Small formatting helpers shared by the UI and the widgets. */
+/** Small numeric formatting helpers shared by the UI and the widgets. */
 public final class Format {
 
     private Format() {
     }
 
-    public static String coord(double value, boolean isLatitude) {
+    /**
+     * Coordinate with caller-supplied hemisphere letters, so the same numeric
+     * layout can be rendered in either language without hardcoded copy.
+     */
+    public static String coord(double value, boolean isLatitude,
+                               String north, String south, String east, String west) {
         double abs = Math.abs(value);
-        String hemi = isLatitude ? (value >= 0 ? "N" : "S") : (value >= 0 ? "E" : "W");
+        String hemi = isLatitude
+                ? (value >= 0 ? north : south)
+                : (value >= 0 ? east : west);
         return String.format(Locale.US, "%.3f°%s", abs, hemi);
     }
 
     /** 24 hour clock, e.g. 05:12 */
-    public static String time24(java.time.ZonedDateTime t) {
+    public static String time24(ZonedDateTime t) {
         return String.format(Locale.US, "%02d:%02d", t.getHour(), t.getMinute());
     }
 
     /** 12 hour clock without meridiem, e.g. 5:12 */
-    public static String time12(java.time.ZonedDateTime t) {
+    public static String time12(ZonedDateTime t) {
         int h = t.getHour() % 12;
         if (h == 0) h = 12;
         return String.format(Locale.US, "%d:%02d", h, t.getMinute());
     }
 
-    public static String meridiem(java.time.ZonedDateTime t) {
-        return t.getHour() < 12 ? "AM" : "PM";
-    }
-
-    /** Header wall clock, e.g. 18:26:16 or 6:26:16 PM. */
-    public static String clockWithSeconds(java.time.ZonedDateTime t, boolean use24) {
-        if (use24) {
-            return String.format(Locale.US, "%02d:%02d:%02d",
-                    t.getHour(), t.getMinute(), t.getSecond());
-        }
-        int h = t.getHour() % 12;
-        if (h == 0) h = 12;
-        return String.format(Locale.US, "%d:%02d:%02d %s",
-                h, t.getMinute(), t.getSecond(), meridiem(t));
-    }
-
-    /** Countdown as HH:MM:SS */
+    /** Countdown as HH:MM. */
     public static String duration(long millis) {
-        long total = Math.max(0, millis / 1000L);
-        long h = total / 3600;
-        long m = (total % 3600) / 60;
-        long s = total % 60;
-        return String.format(Locale.US, "%02d:%02d:%02d", h, m, s);
+        long total = Math.max(0, millis / 60_000L);
+        long h = total / 60;
+        long m = total % 60;
+        return String.format(Locale.US, "%02d:%02d", h, m);
     }
 
     public static String compactDuration(long millis) {
-        long total = Math.max(0, millis / 1000L);
-        long h = total / 3600;
-        long m = (total % 3600) / 60;
+        long total = Math.max(0, millis / 60_000L);
+        long h = total / 60;
+        long m = total % 60;
         return String.format(Locale.US, "%dh %02dm", h, m);
-    }
-
-    public static String cardinal(double bearing) {
-        String[] points = {"N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-                "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"};
-        int index = (int) Math.round(bearing / 22.5) % 16;
-        return points[index];
     }
 }

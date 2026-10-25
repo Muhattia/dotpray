@@ -1,6 +1,6 @@
 # Google Play Data safety — draft answers
 
-**App:** Dotpray 1.2 (`com.dotpray.app`)  
+**App:** Dotpray 1.3 (`com.dotpray.app`)  
 **Status:** Draft for Play Console. Re-check every answer against the build you
 upload; the form is a legal declaration, not marketing copy.
 

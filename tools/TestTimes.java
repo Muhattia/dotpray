@@ -34,7 +34,7 @@ public class TestTimes {
                 sb.append(city[0]).append('|').append(date).append('|');
                 for (PrayerCalculator.Entry e : entries) {
                     ZonedDateTime t = e.instant.atZone(ZoneId.of(city[3]));
-                    sb.append(String.format("%s=%02d:%02d;", e.prayer.label,
+                    sb.append(String.format("%s=%02d:%02d;", e.prayer.name(),
                             t.getHour(), t.getMinute()));
                 }
                 System.out.println(sb);

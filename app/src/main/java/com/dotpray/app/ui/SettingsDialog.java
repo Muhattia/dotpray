@@ -13,11 +13,14 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.Switch;
 import android.widget.TextView;
 
 import com.dotpray.app.R;
 import com.dotpray.app.alerts.NotificationHelper;
+import com.dotpray.app.data.Language;
 import com.dotpray.app.data.PrayerPrefs;
 import com.dotpray.app.prayer.AsrMethod;
 
@@ -27,13 +30,15 @@ public class SettingsDialog {
     public interface Callback {
         void onThemeChanged();
 
+        void onLanguageChanged();
+
         void onAsrChanged();
 
         void onClockChanged(boolean use24Hour);
 
         void onAlertsChanged(boolean enabled);
 
-        void onAddWidget(boolean wide);
+        void onAddWidget(WidgetSizeDialog.Kind kind);
     }
 
     private final Activity activity;
@@ -41,6 +46,8 @@ public class SettingsDialog {
     private final PrayerPrefs prefs;
 
     private Dialog dialog;
+    private TextView languageArabic;
+    private TextView languageEnglish;
     private TextView themeSystem;
     private TextView themeLight;
     private TextView themeDark;
@@ -49,6 +56,10 @@ public class SettingsDialog {
     private Switch clockSwitch;
     private Switch alertsSwitch;
     private TextView alertsHint;
+    private ScrollView settingsScroll;
+    private View rowAbout;
+    private View aboutContent;
+    private ImageView aboutArrow;
 
     public SettingsDialog(Activity activity, Callback callback) {
         this.activity = activity;
@@ -64,24 +75,45 @@ public class SettingsDialog {
         content.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         dialog.setContentView(content);
+        settingsScroll = (ScrollView) content;
 
         themeSystem = content.findViewById(R.id.btnThemeSystem);
         themeLight = content.findViewById(R.id.btnThemeLight);
         themeDark = content.findViewById(R.id.btnThemeDark);
+        languageArabic = content.findViewById(R.id.btnLanguageArabic);
+        languageEnglish = content.findViewById(R.id.btnLanguageEnglish);
         asrStandard = content.findViewById(R.id.btnAsrStandard);
         asrHanafi = content.findViewById(R.id.btnAsrHanafi);
         clockSwitch = content.findViewById(R.id.switchClock);
         alertsSwitch = content.findViewById(R.id.switchAlerts);
         alertsHint = content.findViewById(R.id.alertsHint);
+        aboutContent = content.findViewById(R.id.aboutContent);
+        aboutArrow = content.findViewById(R.id.aboutArrow);
+        rowAbout = content.findViewById(R.id.rowAbout);
 
         content.findViewById(R.id.btnCloseSettings).setOnClickListener(v -> dialog.dismiss());
         alertsHint.setOnClickListener(v -> openNotificationSettings());
-        content.findViewById(R.id.btnWidgetWide).setOnClickListener(v -> callback.onAddWidget(true));
-        content.findViewById(R.id.btnWidgetSmall).setOnClickListener(v -> callback.onAddWidget(false));
+        rowAbout.setOnClickListener(v -> toggleAbout());
+
+        // Material rows are one target: tapping the label should work, not
+        // just the small switch at the end.
+        View rowClock = content.findViewById(R.id.rowClock);
+        rowClock.setOnClickListener(v -> clockSwitch.setChecked(!clockSwitch.isChecked()));
+        View rowAlerts = content.findViewById(R.id.rowAlerts);
+        rowAlerts.setOnClickListener(v -> alertsSwitch.setChecked(!alertsSwitch.isChecked()));
+        content.findViewById(R.id.btnWidgetWide).setOnClickListener(v ->
+                callback.onAddWidget(WidgetSizeDialog.Kind.WIDE));
+        content.findViewById(R.id.btnWidgetSmall).setOnClickListener(v ->
+                callback.onAddWidget(WidgetSizeDialog.Kind.SMALL));
+        content.findViewById(R.id.btnWidgetMinimal).setOnClickListener(v ->
+                callback.onAddWidget(WidgetSizeDialog.Kind.MINIMAL));
 
         themeSystem.setOnClickListener(v -> selectTheme(PrayerPrefs.THEME_SYSTEM));
         themeLight.setOnClickListener(v -> selectTheme(PrayerPrefs.THEME_LIGHT));
         themeDark.setOnClickListener(v -> selectTheme(PrayerPrefs.THEME_DARK));
+
+        languageArabic.setOnClickListener(v -> selectLanguage(Language.ARABIC));
+        languageEnglish.setOnClickListener(v -> selectLanguage(Language.ENGLISH));
 
         asrStandard.setOnClickListener(v -> {
             prefs.setAsr(AsrMethod.STANDARD);
@@ -150,16 +182,44 @@ public class SettingsDialog {
         callback.onThemeChanged();
     }
 
+    private void selectLanguage(String language) {
+        boolean changed = !Language.normalize(language).equals(prefs.getLanguage());
+        if (changed) prefs.setLanguage(language);
+        updateLanguageStyles();
+        if (changed) callback.onLanguageChanged();
+    }
+
     private void refreshValues() {
+        updateLanguageStyles();
         updateThemeStyles();
         updateAsrStyles();
         updateAlertsHint();
+    }
+
+    private void updateLanguageStyles() {
+        boolean arabic = Language.isArabic(prefs.getLanguage());
+        stylePill(languageArabic, arabic);
+        stylePill(languageEnglish, !arabic);
     }
 
     private void updateAlertsHint() {
         if (alertsHint == null) return;
         alertsHint.setVisibility(NotificationHelper.notificationsEnabled(activity)
                 ? View.GONE : View.VISIBLE);
+    }
+
+    private void toggleAbout() {
+        if (aboutContent == null) return;
+        boolean open = aboutContent.getVisibility() != View.VISIBLE;
+        aboutContent.setVisibility(open ? View.VISIBLE : View.GONE);
+        aboutArrow.animate().rotation(open ? 180f : 0f).setDuration(160L).start();
+        // The row sits at the end of the sheet; bring the opened copy into
+        // view instead of leaving the reader at the fold.
+        if (open && settingsScroll != null && rowAbout != null) {
+            int offset = Math.max(0, rowAbout.getTop()
+                    - ListPickerDialog.dp(activity, 12));
+            settingsScroll.post(() -> settingsScroll.smoothScrollTo(0, offset));
+        }
     }
 
     private void openNotificationSettings() {

@@ -15,7 +15,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="false"
+        android:supportsRtl="true"
         android:theme="@style/Theme.Dotpray"
         android:usesCleartextTraffic="false">
 
@@ -32,9 +32,56 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".QiblaActivity"
+            android:exported="false"
+            android:label="@string/qibla"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.Dotpray" />
+
+        <!-- Each provider points android:configure at its own subclass. The
+             configuration intent carries only the new appWidgetId, which may
+             not be bound to a provider yet on the first placement. -->
+        <activity
+            android:name=".widget.WideWidgetConfigActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:label="@string/widget_settings_title"
+            android:theme="@style/Theme.Dotpray">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".widget.SmallWidgetConfigActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:label="@string/widget_settings_title"
+            android:theme="@style/Theme.Dotpray">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".widget.MinimalWidgetConfigActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:label="@string/widget_settings_title"
+            android:theme="@style/Theme.Dotpray">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <receiver
             android:name=".widget.PrayerWidgetProvider"
-            android:exported="true">
+            android:exported="true"
+            android:label="@string/widget_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -52,13 +99,26 @@
 
         <receiver
             android:name=".widget.SmallPrayerWidgetProvider"
-            android:exported="true">
+            android:exported="true"
+            android:label="@string/widget_small_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_prayer_small_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.MinimalPrayerWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_minimal_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_prayer_minimal_info" />
         </receiver>
 
         <receiver

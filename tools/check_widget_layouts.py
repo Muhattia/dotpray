@@ -2,15 +2,15 @@
 """Fail the build if a widget layout uses a class RemoteViews cannot inflate.
 
 RemoteViews only understands a fixed set of view classes. A single <View/> is
-enough for the launcher to show "Couldn't add widget", so this guards the two
-home-screen layouts.
+enough for the launcher to show "Couldn't add widget", so this guards the
+home-screen layouts shared by the three widget variants.
 """
 import re, sys, os
 
 ALLOWED = {
     "FrameLayout", "LinearLayout", "RelativeLayout", "GridLayout",
     "AbsoluteLayout", "AnalogClock", "Button", "Chronometer", "ImageButton",
-    "ImageView", "ProgressBar", "TextView", "ViewFlipper", "ListView",
+    "ImageView", "ProgressBar", "TextView", "ListView",
     "GridView", "StackView", "AdapterViewFlipper", "AdapterViewAnimator",
     "ViewStub", "ScrollView", "HorizontalScrollView", "RadioGroup",
     "RadioButton", "Switch", "SlidingDrawer",
@@ -19,6 +19,7 @@ ALLOWED = {
 paths = sys.argv[1:] or [
     "app/src/main/res/layout/widget_prayer.xml",
     "app/src/main/res/layout/widget_prayer_small.xml",
+    "app/src/main/res/layout/widget_preview_minimal.xml",
 ]
 
 bad = 0

@@ -9,9 +9,14 @@
     <color name="line_soft">#FF141414</color>
     <color name="fg">#FFF4F4F2</color>
     <color name="fg_dim">#FF8E8E8E</color>
-    <color name="fg_faint">#FF565656</color>
-    <color name="fg_past">#FF6E6E6E</color>
+    <!-- Quiet ink stays readable on both black and the #121212 cards:
+         #7E7E7E is 5.17:1 on black and 4.61:1 on #121212. -->
+    <color name="fg_faint">#FF7E7E7E</color>
+    <color name="fg_past">#FF7E7E7E</color>
     <color name="accent">#FFD71921</color>
+    <!-- The deep red is right for dots and rails, but small accent text on
+         #121212 needs a lighter tint to clear 4.5:1. -->
+    <color name="accent_text">#FFF4333B</color>
     <color name="accent_dim">#FF7A1219</color>
     <color name="accent_soft">#26D71921</color>
     <color name="icon_bg">#FF000000</color>

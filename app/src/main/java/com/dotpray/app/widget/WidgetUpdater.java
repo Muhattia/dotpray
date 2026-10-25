@@ -2,13 +2,14 @@ package com.dotpray.app.widget;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
+import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.util.TypedValue;
-import android.view.View;
+import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.dotpray.app.MainActivity;
@@ -24,136 +25,7 @@ import java.time.Instant;
 /** Pushes the current prayer state into every placed widget. */
 public final class WidgetUpdater {
 
-    // One 60-child ViewFlipper per seconds field: 00..59. Keeping both digits
-    // in the same flipper avoids a separate tens timer drifting out of phase
-    // with the wall clock.
-    private static final int[] NOW_SECONDS_IDS = {
-            R.id.wNowSec0,
-            R.id.wNowSec1,
-            R.id.wNowSec2,
-            R.id.wNowSec3,
-            R.id.wNowSec4,
-            R.id.wNowSec5,
-            R.id.wNowSec6,
-            R.id.wNowSec7,
-            R.id.wNowSec8,
-            R.id.wNowSec9,
-            R.id.wNowSec10,
-            R.id.wNowSec11,
-            R.id.wNowSec12,
-            R.id.wNowSec13,
-            R.id.wNowSec14,
-            R.id.wNowSec15,
-            R.id.wNowSec16,
-            R.id.wNowSec17,
-            R.id.wNowSec18,
-            R.id.wNowSec19,
-            R.id.wNowSec20,
-            R.id.wNowSec21,
-            R.id.wNowSec22,
-            R.id.wNowSec23,
-            R.id.wNowSec24,
-            R.id.wNowSec25,
-            R.id.wNowSec26,
-            R.id.wNowSec27,
-            R.id.wNowSec28,
-            R.id.wNowSec29,
-            R.id.wNowSec30,
-            R.id.wNowSec31,
-            R.id.wNowSec32,
-            R.id.wNowSec33,
-            R.id.wNowSec34,
-            R.id.wNowSec35,
-            R.id.wNowSec36,
-            R.id.wNowSec37,
-            R.id.wNowSec38,
-            R.id.wNowSec39,
-            R.id.wNowSec40,
-            R.id.wNowSec41,
-            R.id.wNowSec42,
-            R.id.wNowSec43,
-            R.id.wNowSec44,
-            R.id.wNowSec45,
-            R.id.wNowSec46,
-            R.id.wNowSec47,
-            R.id.wNowSec48,
-            R.id.wNowSec49,
-            R.id.wNowSec50,
-            R.id.wNowSec51,
-            R.id.wNowSec52,
-            R.id.wNowSec53,
-            R.id.wNowSec54,
-            R.id.wNowSec55,
-            R.id.wNowSec56,
-            R.id.wNowSec57,
-            R.id.wNowSec58,
-            R.id.wNowSec59
-    };
-    private static final int[] COUNTDOWN_SECONDS_IDS = {
-            R.id.wCountdownSec0,
-            R.id.wCountdownSec1,
-            R.id.wCountdownSec2,
-            R.id.wCountdownSec3,
-            R.id.wCountdownSec4,
-            R.id.wCountdownSec5,
-            R.id.wCountdownSec6,
-            R.id.wCountdownSec7,
-            R.id.wCountdownSec8,
-            R.id.wCountdownSec9,
-            R.id.wCountdownSec10,
-            R.id.wCountdownSec11,
-            R.id.wCountdownSec12,
-            R.id.wCountdownSec13,
-            R.id.wCountdownSec14,
-            R.id.wCountdownSec15,
-            R.id.wCountdownSec16,
-            R.id.wCountdownSec17,
-            R.id.wCountdownSec18,
-            R.id.wCountdownSec19,
-            R.id.wCountdownSec20,
-            R.id.wCountdownSec21,
-            R.id.wCountdownSec22,
-            R.id.wCountdownSec23,
-            R.id.wCountdownSec24,
-            R.id.wCountdownSec25,
-            R.id.wCountdownSec26,
-            R.id.wCountdownSec27,
-            R.id.wCountdownSec28,
-            R.id.wCountdownSec29,
-            R.id.wCountdownSec30,
-            R.id.wCountdownSec31,
-            R.id.wCountdownSec32,
-            R.id.wCountdownSec33,
-            R.id.wCountdownSec34,
-            R.id.wCountdownSec35,
-            R.id.wCountdownSec36,
-            R.id.wCountdownSec37,
-            R.id.wCountdownSec38,
-            R.id.wCountdownSec39,
-            R.id.wCountdownSec40,
-            R.id.wCountdownSec41,
-            R.id.wCountdownSec42,
-            R.id.wCountdownSec43,
-            R.id.wCountdownSec44,
-            R.id.wCountdownSec45,
-            R.id.wCountdownSec46,
-            R.id.wCountdownSec47,
-            R.id.wCountdownSec48,
-            R.id.wCountdownSec49,
-            R.id.wCountdownSec50,
-            R.id.wCountdownSec51,
-            R.id.wCountdownSec52,
-            R.id.wCountdownSec53,
-            R.id.wCountdownSec54,
-            R.id.wCountdownSec55,
-            R.id.wCountdownSec56,
-            R.id.wCountdownSec57,
-            R.id.wCountdownSec58,
-            R.id.wCountdownSec59
-    };
-    private static final int[] LIVE_FLIPPERS = {
-            R.id.wNowSeconds, R.id.wCountdownSeconds
-    };
+    private static final String TAG = "DotprayWidgetUpdater";
 
     private WidgetUpdater() {
     }
@@ -164,140 +36,181 @@ public final class WidgetUpdater {
                 new ComponentName(context, PrayerWidgetProvider.class)));
         updateSmall(context, manager, manager.getAppWidgetIds(
                 new ComponentName(context, SmallPrayerWidgetProvider.class)));
+        updateMinimal(context, manager, manager.getAppWidgetIds(
+                new ComponentName(context, MinimalPrayerWidgetProvider.class)));
         WidgetTick.schedule(context);
+    }
+
+    /**
+     * Repaints a single placement after its appearance is changed.
+     *
+     * <p>The first configuration can run before the launcher has bound the
+     * new id to its provider, so {@link AppWidgetManager#getAppWidgetInfo(int)}
+     * may be null there. In that case the provider's own {@code onUpdate} is
+     * the first draw, and this method leaves every existing placement alone
+     * instead of refreshing unrelated widgets as a side effect.
+     */
+    public static void updateOne(Context context, int appWidgetId) {
+        if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            Log.w(TAG, "updateOne: invalid appWidgetId=" + appWidgetId
+                    + "; no widget was repainted");
+            return;
+        }
+        AppWidgetManager manager = AppWidgetManager.getInstance(context);
+        AppWidgetProviderInfo info = manager.getAppWidgetInfo(appWidgetId);
+        if (info == null) {
+            // The first configuration intent can arrive before the launcher
+            // binds the new id. The provider's own onUpdate will paint it; do
+            // not repaint unrelated placements as a side effect.
+            Log.i(TAG, "updateOne: appWidgetId=" + appWidgetId
+                    + " is not bound yet; provider onUpdate will paint it");
+            return;
+        }
+        ComponentName provider = info.provider;
+        if (provider == null) {
+            Log.w(TAG, "updateOne: appWidgetId=" + appWidgetId
+                    + " has no provider; no widget was repainted");
+            return;
+        }
+        String className = provider.getClassName();
+        if (PrayerWidgetProvider.class.getName().equals(className)) {
+            updateWide(context, manager, new int[]{appWidgetId});
+            WidgetTick.schedule(context);
+            return;
+        }
+        if (SmallPrayerWidgetProvider.class.getName().equals(className)) {
+            updateSmall(context, manager, new int[]{appWidgetId});
+            WidgetTick.schedule(context);
+            return;
+        }
+        if (MinimalPrayerWidgetProvider.class.getName().equals(className)) {
+            updateMinimal(context, manager, new int[]{appWidgetId});
+            WidgetTick.schedule(context);
+            return;
+        }
+        Log.w(TAG, "updateOne: appWidgetId=" + appWidgetId
+                + " belongs to a different provider (" + className
+                + "); no widget was repainted");
     }
 
     public static void updateWide(Context context, AppWidgetManager manager, int[] ids) {
         if (ids == null || ids.length == 0) return;
         PrayerPrefs prefs = new PrayerPrefs(context);
-        Place place = prefs.getPlace();
+        Place place = prefs.syncGpsZone();
         Instant now = Instant.now();
         PrayerClock.Snapshot snapshot = PrayerClock.snapshot(
                 now, place, CalcMethod.EGYPT, prefs.getAsr());
         boolean use24 = prefs.is24Hour();
         Context themed = ThemeController.wrap(context);
-        boolean liveSeconds = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
 
         for (int id : ids) {
-            int[] px = pixels(context, manager, id);
-            WidgetRenderer.Card card = WidgetRenderer.wide(themed, snapshot, use24, now,
-                    px[0], px[1], liveSeconds);
-
-            RemoteViews views = new RemoteViews(context.getPackageName(),
-                    R.layout.widget_prayer);
-            views.setImageViewBitmap(R.id.wCanvas, card.bitmap);
-            bindLiveDigits(views, card.nowSeconds,
-                    card.countdownSeconds, snapshot, now, liveSeconds,
-                    px[2] / (float) px[0], px[3] / (float) px[1]);
-            views.setContentDescription(R.id.wCanvas,
-                    WidgetRenderer.describe(snapshot, use24));
-            views.setOnClickPendingIntent(R.id.wRoot, openApp(context, 10));
-            manager.updateAppWidget(id, views);
+            try {
+                int[] px = pixels(context, manager, id);
+                int transparency = WidgetPrefs.getTransparency(context, id);
+                RemoteViews views = new RemoteViews(context.getPackageName(),
+                        R.layout.widget_prayer);
+                clearSurface(views);
+                Bitmap bitmap = WidgetRenderer.wide(themed, snapshot, use24, now,
+                        px[0], px[1], transparency);
+                if (bitmap == null) {
+                    Log.e(TAG, "updateWide: type=wide id=" + id
+                            + " renderer returned null");
+                    continue;
+                }
+                views.setImageViewBitmap(R.id.wCanvas, bitmap);
+                // One accessible node owns both the description and the click;
+                // the bitmap itself stays out of the screen-reader tree.
+                views.setContentDescription(R.id.wRoot,
+                        WidgetRenderer.describe(themed, snapshot, use24,
+                                now.toEpochMilli()));
+                views.setOnClickPendingIntent(R.id.wRoot, openApp(context, 10));
+                manager.updateAppWidget(id, views);
+                Log.d(TAG, "updateWide: type=wide id=" + id + " " + px[0] + "x"
+                        + px[1] + " transparency=" + transparency + " ok");
+            } catch (RuntimeException e) {
+                Log.e(TAG, "updateWide: type=wide id=" + id + " failed", e);
+            }
         }
     }
 
     public static void updateSmall(Context context, AppWidgetManager manager, int[] ids) {
+        updateCompact(context, manager, ids, true);
+    }
+
+    public static void updateMinimal(Context context, AppWidgetManager manager,
+                                     int[] ids) {
+        updateCompact(context, manager, ids, false);
+    }
+
+    private static void updateCompact(Context context, AppWidgetManager manager,
+                                      int[] ids, boolean rail) {
         if (ids == null || ids.length == 0) return;
         PrayerPrefs prefs = new PrayerPrefs(context);
-        Place place = prefs.getPlace();
+        Place place = prefs.syncGpsZone();
         Instant now = Instant.now();
         PrayerClock.Snapshot snapshot = PrayerClock.snapshot(
                 now, place, CalcMethod.EGYPT, prefs.getAsr());
         boolean use24 = prefs.is24Hour();
         Context themed = ThemeController.wrap(context);
-        boolean liveSeconds = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
 
+        String type = rail ? "small" : "minimal";
         for (int id : ids) {
-            int[] px = pixels(context, manager, id);
-            WidgetRenderer.Card card = WidgetRenderer.small(themed, snapshot, use24, now,
-                    px[0], px[1], liveSeconds);
-
-            RemoteViews views = new RemoteViews(context.getPackageName(),
-                    R.layout.widget_prayer_small);
-            views.setImageViewBitmap(R.id.wCanvas, card.bitmap);
-            bindLiveDigits(views, card.nowSeconds,
-                    card.countdownSeconds, snapshot, now, liveSeconds,
-                    px[2] / (float) px[0], px[3] / (float) px[1]);
-            views.setContentDescription(R.id.wCanvas,
-                    WidgetRenderer.describe(snapshot, use24));
-            views.setOnClickPendingIntent(R.id.wRoot, openApp(context, 12));
-            manager.updateAppWidget(id, views);
-        }
-    }
-
-    /**
-     * Seeds and places the two live seconds flippers. The flippers advance in
-     * launcher time, so this only sets the current child and positions the
-     * fields over the blank pixels the renderer reserved in the bitmap.
-     *
-     * <p>The countdown layout is in reverse value order (59, 58, ... 00), so a
-     * normal forward flip is a decrement and wraps from 00 back to 59.
-     */
-    private static void bindLiveDigits(RemoteViews views,
-                                       WidgetRenderer.Live nowField,
-                                       WidgetRenderer.Live countdownField,
-                                       PrayerClock.Snapshot snapshot, Instant now,
-                                       boolean live, float scaleX, float scaleY) {
-        if (!live || (nowField == null && countdownField == null)) {
-            for (int id : LIVE_FLIPPERS) {
-                views.setViewVisibility(id, View.GONE);
+            try {
+                int[] px = pixels(context, manager, id);
+                int transparency = WidgetPrefs.getTransparency(context, id);
+                RemoteViews views = new RemoteViews(context.getPackageName(),
+                        R.layout.widget_prayer_small);
+                clearSurface(views);
+                Bitmap bitmap = rail
+                        ? WidgetRenderer.small(themed, snapshot, use24, now,
+                        px[0], px[1], transparency)
+                        : WidgetRenderer.minimal(themed, snapshot, use24, now,
+                        px[0], px[1], transparency);
+                if (bitmap == null) {
+                    Log.e(TAG, "updateCompact: type=" + type + " id=" + id
+                            + " renderer returned null");
+                    continue;
+                }
+                views.setImageViewBitmap(R.id.wCanvas, bitmap);
+                views.setContentDescription(R.id.wRoot,
+                        WidgetRenderer.describe(themed, snapshot, use24,
+                                now.toEpochMilli()));
+                views.setOnClickPendingIntent(R.id.wRoot,
+                        openApp(context, rail ? 12 : 13));
+                manager.updateAppWidget(id, views);
+                Log.d(TAG, "updateCompact: type=" + type + " id=" + id + " "
+                        + px[0] + "x" + px[1] + " transparency=" + transparency
+                        + " ok");
+            } catch (RuntimeException e) {
+                Log.e(TAG, "updateCompact: type=" + type + " id=" + id
+                        + " failed", e);
             }
-            return;
-        }
-
-        // The wall clock is deliberately quieter than the countdown, so each
-        // flipper keeps the colour chosen by the renderer. The 2x2 card has no
-        // wall clock, so either field may be absent.
-        if (nowField != null) {
-            tint(views, NOW_SECONDS_IDS, nowField.color);
-            // Round to the nearest second rather than truncating. The flipper's
-            // timer starts when the host attaches it, so seeding the nearest value
-            // keeps the first second within half a tick of wall time.
-            int millis = (int) (now.toEpochMilli() % 1000L);
-            int second = now.atZone(snapshot.place.zone()).getSecond();
-            if (millis >= 500) second = (second + 1) % 60;
-            views.setDisplayedChild(R.id.wNowSeconds, second);
-            place(views, R.id.wNowSeconds, nowField, scaleX, scaleY);
-            views.setViewVisibility(R.id.wNowSeconds, View.VISIBLE);
-        } else {
-            views.setViewVisibility(R.id.wNowSeconds, View.GONE);
-        }
-
-        if (countdownField != null) {
-            tint(views, COUNTDOWN_SECONDS_IDS, countdownField.color);
-            long remainingMillis = Math.max(0L, snapshot.next.instant.toEpochMilli()
-                    - now.toEpochMilli());
-            int countdownSecond = (int) (((remainingMillis + 500L) / 1000L) % 60L);
-            views.setDisplayedChild(R.id.wCountdownSeconds, 59 - countdownSecond);
-            place(views, R.id.wCountdownSeconds, countdownField, scaleX, scaleY);
-            views.setViewVisibility(R.id.wCountdownSeconds, View.VISIBLE);
-        } else {
-            views.setViewVisibility(R.id.wCountdownSeconds, View.GONE);
-        }
-    }
-
-    private static void tint(RemoteViews views, int[] ids, int color) {
-        for (int id : ids) {
-            // White vector glyphs become the current foreground colour.
-            views.setInt(id, "setColorFilter", color);
         }
     }
 
     /**
-     * Places a live field. The renderer works in bitmap pixels; when the
-     * widget bitmap was capped for memory, the host stretches it back to the
-     * real widget size, so both the position and the cell size must scale too.
+     * The live preview uses the placement's own cell size when one exists.
+     *
+     * <p>A brand-new placement may not have options yet. Its provider info
+     * reports the minimum supported size, which would preview the short wide
+     * fallback instead of the 4x2 default, so that case uses the variant's
+     * design size instead.
      */
-    private static void place(RemoteViews views, int id, WidgetRenderer.Live field,
-                              float scaleX, float scaleY) {
-        views.setViewLayoutMargin(id, RemoteViews.MARGIN_LEFT,
-                Math.round(field.left * scaleX), TypedValue.COMPLEX_UNIT_PX);
-        views.setViewLayoutMargin(id, RemoteViews.MARGIN_TOP,
-                Math.round(field.top * scaleY), TypedValue.COMPLEX_UNIT_PX);
-        views.setViewLayoutWidth(id, Math.round(field.width * scaleX),
-                TypedValue.COMPLEX_UNIT_PX);
-        views.setViewLayoutHeight(id, Math.round(field.height * scaleY),
-                TypedValue.COMPLEX_UNIT_PX);
+    public static int[] previewPixels(Context context, int appWidgetId,
+                                      int fallbackWidthDp, int fallbackHeightDp) {
+        Bundle options = AppWidgetManager.getInstance(context)
+                .getAppWidgetOptions(appWidgetId);
+        int wDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0);
+        if (wDp <= 0) {
+            wDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0);
+        }
+        int hDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0);
+        if (hDp <= 0) {
+            hDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0);
+        }
+        if (wDp <= 0) wDp = fallbackWidthDp;
+        if (hDp <= 0) hDp = fallbackHeightDp;
+        return pixelsFromDp(context, wDp, hDp);
     }
 
     /**
@@ -306,32 +219,67 @@ public final class WidgetUpdater {
      * update, before the options bundle exists.
      */
     private static int[] pixels(Context context, AppWidgetManager manager, int id) {
+        return pixels(context, manager, id, 326, 160);
+    }
+
+    private static int[] pixels(Context context, AppWidgetManager manager, int id,
+                                int fallbackWidthDp, int fallbackHeightDp) {
         Bundle options = manager.getAppWidgetOptions(id);
-        int wDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0);
+        // Render against the upper bound so the launcher downscales the bitmap
+        // instead of stretching a min-width paint across the cell. The old
+        // min-width bitmap was upscaled by ~25% on a 4x2 placement, which made
+        // every dot and glyph look soft.
+        int wDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0);
+        if (wDp <= 0) {
+            wDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0);
+        }
         int hDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0);
         if (hDp <= 0) hDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0);
 
         if (wDp <= 0 || hDp <= 0) {
-            android.appwidget.AppWidgetProviderInfo info = manager.getAppWidgetInfo(id);
+            AppWidgetProviderInfo info = manager.getAppWidgetInfo(id);
             if (info != null) {
-                if (wDp <= 0) wDp = info.minWidth;
-                if (hDp <= 0) hDp = info.minHeight;
+                if (wDp <= 0) wDp = Math.max(info.minWidth, info.minResizeWidth);
+                if (hDp <= 0) hDp = Math.max(info.minHeight, info.minResizeHeight);
             }
         }
-        if (wDp <= 0) wDp = 280;
-        if (hDp <= 0) hDp = 150;
+        if (wDp <= 0) wDp = fallbackWidthDp;
+        if (hDp <= 0) hDp = fallbackHeightDp;
+        return pixelsFromDp(context, wDp, hDp);
+    }
 
+    private static int[] pixelsFromDp(Context context, int wDp, int hDp) {
         float density = context.getResources().getDisplayMetrics().density;
-        float w = wDp * density;
-        float h = hDp * density;
+        // A small oversample covers launchers whose max bounds are a few dp
+        // tighter than the laid-out host view. The host downscales, which is
+        // sharp; the old min-width path upscaled, which was soft.
+        float oversample = 1.12f;
+        float w = wDp * density * oversample;
+        float h = hDp * density * oversample;
 
         // One bitmap has to fit through the widget pipe; cap the longest edge
         // while keeping the aspect ratio the launcher gave us.
         float scale = Math.min(1f, 1600f / Math.max(w, h));
-        int actualW = Math.max(1, Math.round(w));
-        int actualH = Math.max(1, Math.round(h));
         return new int[]{Math.max(1, Math.round(w * scale)),
-                Math.max(1, Math.round(h * scale)), actualW, actualH};
+                Math.max(1, Math.round(h * scale))};
+    }
+
+    /**
+     * The card is painted into {@code wCanvas}; the RemoteViews containers
+     * must stay transparent at every level.
+     *
+     * <p>This is not redundant with the transparent colour in the layout XML.
+     * When the launcher reuses an existing widget view it calls
+     * {@code RemoteViews.reapply()}, which runs the update actions but does
+     * not re-inflate the layout attributes. A background left on that view by
+     * an older build therefore survives every later XML-only change. Resetting
+     * both containers through RemoteViews actions runs on both fresh
+     * inflation and recycling, so the bitmap alpha is the only thing the user
+     * can see.
+     */
+    private static void clearSurface(RemoteViews views) {
+        views.setInt(R.id.wRoot, "setBackgroundColor", Color.TRANSPARENT);
+        views.setInt(R.id.wCanvas, "setBackgroundColor", Color.TRANSPARENT);
     }
 
     private static PendingIntent openApp(Context context, int requestCode) {

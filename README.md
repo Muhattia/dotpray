@@ -10,60 +10,139 @@ No ads, no tracking, no AndroidX. The app has no `INTERNET` permission.
 </p>
 
 <p align="center">
-  <img src="preview/app-screen.png" width="260" alt="Dotpray app, dark theme">
-  <img src="preview/app-screen-light.png" width="260" alt="Dotpray app, light theme">
+  <img src="preview/app-screen.png" width="260" alt="Dotpray app in English, dark theme">
+  <img src="preview/app-screen-ar.png" width="260" alt="Dotpray app in Arabic, RTL, dark theme">
+  <img src="preview/app-screen-light.png" width="260" alt="Dotpray app in English, light theme">
   <img src="preview/widget-wide.png" width="420" alt="Dotpray wide widget, dark theme">
-  <img src="preview/widget-small.png" width="200" alt="Dotpray small widget, dark theme">
+  <img src="preview/widget-small.png" width="200" alt="Dotpray small widget with a progress rail, dark theme">
+  <img src="preview/widget-minimal.png" width="200" alt="Dotpray minimal widget without a progress rail, dark theme">
 </p>
 
-*Previews are design mock-ups rendered from the real layouts
-(`tools/render_preview.py`), not screenshots. The app and both widgets share
-the in-app System / Light / Dark choice.*
+<p align="center">
+  <img src="preview/qibla-screen.png" width="260" alt="Dotpray Qibla compass, dark theme, showing the Qibla 78 degrees to the left">
+  <img src="preview/qibla-screen-aligned.png" width="260" alt="Dotpray Qibla compass aligned with the Qibla, red rim state">
+  <img src="preview/qibla-screen-ar.png" width="260" alt="Dotpray Qibla compass in Arabic, RTL, dark theme">
+</p>
 
-*Version 1.2 — centred widgets, a live next-prayer rail, refreshed icons, and a smoother settings sheet.*
+*Previews are design mock-ups drawn to mirror the real layouts and palette
+(`tools/render_preview.py`), not screenshots. The app and all three widget
+layouts share the in-app System / Light / Dark choice; the Qibla compass follows
+that choice too, with the dark rendering shown here as the primary instrument
+surface.*
+
+*Version 1.3 — Arabic and English, natural Arabic typography, post-Adhan grace,
+three resizable widget layouts, and dotted progress rails.*
+
+*1.3 also adds the Qibla compass and per-widget **Widget Settings** with a
+continuous transparency level. Prayer calculations, alerts and the default
+widget rendering remain unchanged; release notes are under **1.3** in the
+changelog.*
+
+## What's new in 1.3
+
+These are the features added since 1.2. The existing prayer engine,
+calculations, alarms, storage and offline manifest are unchanged.
+
+* **Choose the app language.** Settings has an **App Language** row with
+  **العربية** and **English**. The choice is saved independently of the phone's
+  system language, English remains the default, and switching rebuilds the
+  screen in the selected direction: RTL for Arabic, LTR for English.
+* **A fully Arabic app and every widget.** Arabic is no longer decoration: the
+  selected language supplies the prayer names, labels, dates, place names,
+  notification copy, accessibility text and elapsed sentence. Arabic uses
+  [Alexandria](https://fonts.google.com/specimen/Alexandria) Regular and
+  SemiBold (SIL OFL), bundled in `res/font`; Doto still sets prayer times,
+  countdowns and the English display. Arabic text is set at a slightly smaller
+  optical size than English so labels, prayer names, dates and buttons carry
+  the same visual weight in both languages. There is no dotted Arabic
+  treatment, no letter-spacing and no runtime font download.
+* **The prayer stays current after the Adhan.** Fajr, Dhuhr, Asr and Isha stay
+  active for 15 minutes; Maghrib for 10. The app hero, the wide widget and both
+  compact widgets show `PRAYER NOW` / `الصلاة الآن` with a localized elapsed
+  sentence during that window, then switch to the following prayer and start
+  its countdown at zero. Progress is 100% during grace and exactly 0% at the
+  next Adhan, including Isha → Fajr across midnight, restarts, clock jumps and
+  time-zone changes. At extreme latitudes the grace is capped at the next Adhan
+  so no prayer is skipped.
+* **Three resizable widgets.** The wide card defaults to 4×2, the small card to
+  3×3 with a dotted progress rail, and the new minimal card to 2×2 without the
+  rail. Each has its own provider, and all three keep horizontal and vertical
+  resize handles. The wide card drops its schedule and date lines when it is
+  resized short instead of shrinking them out of legibility. The in-app
+  **ADD WIDGET** button opens a three-option sheet — *Small — 3×3*,
+  *Minimal — 2×2* or *Wide — 4×2* — and pins the matching provider directly.
+* **A calmer wide card.** The wide layout now uses a measured four-row grid:
+  the clock aligns with the prayer name, the Gregorian date with the prayer
+  time, and the Hijri date with the countdown. The wide hero uses a 22 sp name,
+  35 sp time, 22 sp clock and 14 sp countdown; the schedule uses 10 sp names
+  and 15 sp times, with five equal-width cells. Rows are spaced from glyph ink
+  rather than a baseline grid, so the English and Arabic stacks keep the same
+  optical breathing room.
+* **Dotted progress.** The app hero, the wide widget and the small 3×3 widget
+  replace the solid rail with evenly spaced 2 dp dots at a 9 dp pitch.
+  Completed dots use the red accent, remaining dots the quiet track colour, and
+  the row fills from the right in Arabic and from the left in English. The
+  minimal 2×2 card omits the rail by design. The wide rail is optically centred
+  between the countdown and the prayer strip.
+* **RTL that lines up.** The DOTPRAY wordmark and tagline stay on the left in
+  both languages, the Settings and Add Widget buttons share one 52 dp row
+  (42% / 58%), and the Current Location card lines up with the prayer cards in
+  RTL and LTR. Arabic uses **ويدجت** throughout.
+* **In-app credit.** Settings → About names **Muhammad Attia** (development
+  and design) in both languages.
+* **Minute precision.** The app clock, countdown and every widget show `HH:MM`
+  only. Removing the seconds also removes the two live `ViewFlipper` overlays
+  and the 120 generated glyph drawables, so the app's UI ticker runs once a
+  minute and the widget repaints on the minute boundary.
+* **A quieter colon.** The colon glyph in the bundled Doto faces is reduced to
+  45% and re-centred on the digit body, while keeping Doto's normal advance, so
+  `18:17` and `01:04` read as numbers first in the app and every widget.
+
+---
+
+## Qibla compass
+
+The **QIBLA** row under Current Location opens a dedicated live compass. It is
+a precision surface, not a map: a north-up dial, one red Qibla needle, and the
+bearing set in large Doto figures.
+
+* **A real sensor compass.** The heading comes from the rotation-vector sensor,
+  or from the accelerometer + magnetometer pair on devices without one. A
+  60 ms shortest-arc filter keeps the dial calm; every frame still follows the
+  live reading.
+* **True north, not just magnetic north.** The local geomagnetic declination is
+  applied before the heading is shown, so the white **N** marker and the red
+  Qibla needle share the same true-north reference as the calculated bearing.
+* **One red mark.** At rest, the Qibla needle and tip ring are the only red on
+  the dial. North is a longer white tick and a white letter; east, south and
+  west stay quieter in grey. Alignment adds a short red rim segment and turns
+  the fixed top index red.
+* **A clear alignment state.** Within 3° of the Qibla, the top rim gains a short
+  red segment, the top index turns red, the state line reads **ALIGNED**, and a
+  single haptic tick confirms it. The release threshold is slightly wider so
+  the state does not flicker at the edge.
+* **Honest sensor states.** A low-accuracy magnetometer replaces the hint with
+  **CALIBRATE · MOVE PHONE IN A FIGURE 8**; a missing or silent sensor keeps the
+  bearing readable and says **BEARING ONLY** rather than pretending to be live.
+* **No new permissions.** The screen reuses the saved place; it does not request
+  location or touch the network. If the app is still on its Cairo default, the
+  place line carries a **DEFAULT** tag beside the coordinates.
+* **Part of the app, not a separate app.** It follows the app language (full
+  Arabic RTL with Alexandria) and the System / Light / Dark choice, and has a
+  landscape layout that keeps the dial and readout side by side. Back returns to
+  the unchanged prayer screen.
+
+The dial is built from four thin rings, 5° dot markers, 10°/30° spokes, upright
+cardinal letters and a needle that passes behind their clear discs. There are no
+gradients, shadows, illustrations or decorative motion.
 
 ---
 
 ## Credits
 
 - **Muhammad Attia** — development and design — [@Muhattia](https://github.com/Muhattia)
-- **Muhammad M. Hemdan** — original idea — [@karasudidntwakeup](https://github.com/karasudidntwakeup)
 
 Project: [github.com/Muhattia/dotpray](https://github.com/Muhattia/dotpray)
-
----
-
-## What it does
-
-| | |
-|---|---|
-| **Live prayer clock** | Next prayer, its time, and a ticking `HH:MM:SS` countdown |
-| **Two widgets** | Wide `4×2` and compact `2×2`; a live wall clock with seconds and a live `HH:MM:SS` countdown (Android 12+), plus the Hijri date |
-| **Fixed method** | Egyptian General Authority of Survey — Fajr 19.5° / Isha 17.5° |
-| **Asr schools** | Standard (Shafi'i/Maliki/Hanbali) or Hanafi (shadow factor 2) |
-| **Current location** | GPS fix, rechecked every 15 minutes while the app is open, named by the system geocoder with a nearest-city fallback |
-| **Hijri date** | Umm al-Qura calendar through the platform chronology |
-| **Qibla** | Great-circle bearing to the Kaaba from your coordinates |
-| **Prayer alerts** | Notification at each prayer time, exact when the OS allows it, re-armed after reboot, time-zone changes and app updates |
-| **12 / 24 hour** | Switchable, on the device and in the widget |
-| **System / Light / Dark** | A three-way switch that repaints the app and both widgets |
-| **Nothing styling** | Pure black in dark mode, paper white in light mode, hairline borders, dot-matrix backdrop, dot-matrix type throughout, one red accent |
-
-Everything works offline. The app asks for `ACCESS_COARSE_LOCATION` /
-`ACCESS_FINE_LOCATION` to centre the times on the current fix, and it has no
-`INTERNET` permission. On first launch it asks for a fix, then re-checks the
-current location every 15 minutes while the app is open and whenever the app
-resumes after the saved fix is more than 15 minutes old. The location pill
-on the main screen still forces an immediate refresh. A fix is named through
-the platform geocoder; if the device is offline it falls back to the nearest
-bundled city within 150 km. Before the first fix, Cairo is used as a neutral
-starting point.
-
-## Google Play assets
-
-The Play Store listing copy, six phone screenshots (five app screens plus an
-optional credits card), feature graphic, 512 px icon, privacy policy, and Data
-safety draft are in [`aso/`](aso/). Start with [`aso/README.md`](aso/README.md).
 
 ---
 
@@ -74,7 +153,7 @@ build it locally with `./build.sh`:
 
 ```bash
 ./build.sh
-adb install -r dist/dotpray-1.2.apk
+adb install -r dist/dotpray-1.3.apk
 ```
 
 Or copy the built APK to the phone and open it (you will need to allow
@@ -86,30 +165,58 @@ floor is Android 8.0 (API 26), not the CPU architecture. `build.sh` audits this
 and refuses to ship an APK that carries native code for only one half of an
 architecture family.
 
-**Adding the widget:** long-press an empty spot on the home screen → *Widgets* →
-*Dotpray* → drag the **Prayer** (wide) or **Prayer Small** (compact) widget out.
+**Adding a widget:** long-press an empty spot on the home screen → *Widgets* →
+*Dotpray* → drag out **Prayer (wide)** `4×2`, **Prayer (small)** `3×3` or
+**Prayer (minimal)** `2×2`. All three picker labels follow the app language.
 
-Or use the **ADD WIDGET** button inside the app, which asks the launcher to pin
-it for you.
+Or use the **ADD WIDGET** button inside the app. It opens a three-option sheet —
+*Small — 3×3*, *Minimal — 2×2* or *Wide — 4×2* — and asks the launcher to pin
+that provider for you. Every layout keeps resize handles, so it can be made
+wider or taller after pinning. The wide card switches to a compact hero when
+it is resized too short for the schedule strip; the compact cards scale their
+centred stack into the available cells.
 
-The moving seconds in the wall clock and next-prayer countdown are Doto glyph
-vectors inside `ViewFlipper`s. The launcher advances those tiny views itself,
-so the seconds stay live even when the app is not running, without a service or
-a per-second alarm. The bitmap (next prayer, dates, header and prayer strip)
-still redraws on every minute boundary (a non-wakeup `RTC` alarm, exact when the
-OS allows it and `setAndAllowWhileIdle` otherwise), immediately when the device
-is unlocked, on every prayer boundary, on resize, on boot, whenever the clock
-or the time zone changes, and immediately when the app's theme choice or
-location changes.
+**Changing a widget's appearance:** the first time a widget is placed, the
+launcher opens **Widget Settings**, with a live preview, a **TRANSPARENCY** bar
+from **0%** to **100%**, a live percentage, **Apply** and **Cancel**. To revisit
+it on Android 12 or later, long-press the widget and choose *Edit* / *Widget
+settings*. The same screen stays available through the launcher's configuration
+entry on older releases when the launcher supports one; launchers that do not
+expose reconfiguration require removing and adding the widget again. There is
+no invented custom long-press action: all entry points use the standard
+`android:configure` / `widgetFeatures="reconfigurable"` contract. The level
+applies only to the widget you opened, not to the app, the Qibla screen or the
+other placements.
+
+At **0%** the widget is the shipped Dotpray card. As the level rises, the card
+fill, border and background dot field fade together; at **100%** those layers
+are not drawn at all and the wallpaper shows through. Text, prayer times, the
+clock, countdown, red indicators and the full tap target stay fully opaque at
+every level, with a crisp outline that strengthens as the card clears
+instead of a blurred halo; the quiet part of the progress rail is strengthened
+for the same reason. From **80%** upward the type switches to the wallpaper-safe
+light ink used by the night theme, so a clear light-theme widget never becomes a
+dark-on-dark ghost. The bitmap is painted at the upper bound of the launcher's
+reported cell size, with a small oversample, and downscaled by the host, so dots
+and type stay sharp rather than being stretched from a minimum-width paint. The
+`ARGB_8888` bitmap carries real alpha rather than painting the wallpaper colour.
+Every update also resets both RemoteViews containers to transparent, so a
+background left by an older build on a recycled launcher view cannot survive an
+XML-only change. The preview sits on a wallpaper sample, not on another card, so the difference
+is visible while dragging. If a particular launcher paints its own card, shadow
+or padding around every widget, that launcher-owned surface can still be
+visible behind the fully clear layout.
+
+The wall clock, countdown and prayer times use minute precision. The widget
+bitmap (next prayer, dates, header and prayer strip) redraws on every minute
+boundary, on every prayer boundary, when the launcher reports a new cell size,
+on boot, whenever the clock or the time zone changes, and immediately when the
+app's theme, language or location changes.
 
 Prayer alerts use a separate alarm from the widget roll-over. The alert is
 booked for the prayer time (exact when the OS grants exact-alarm access, with
 `setAndAllowWhileIdle` as the fallback); the widget alarm fires shortly after
-and never cancels a waiting alert. Enabling alerts asks for notification
-permission on Android 13+, and Settings shows a red `NOTIFICATIONS BLOCKED`
-hint if notifications or the prayer channel are turned off later. The alert
-also re-arms when the app is opened, so a force-stop or an OEM battery manager
-cannot leave the preference on with no alarm behind it.
+and never cancels a waiting alert.
 
 ---
 
@@ -138,9 +245,14 @@ Requirements:
 | Build tools | `37.0.0` |
 | minSdk / targetSdk | 26 / 35 |
 
-Output: `dist/dotpray-1.2.apk`, signed with a debug key that is generated on
+Output: `dist/dotpray-1.3.apk`, signed with a debug key that is generated on
 first run at `keystore/dotpray.keystore` (outside `build/`, so rebuilds keep the
-same certificate and new versions install over old ones).
+same certificate and new versions install over old ones). Set `APK_NAME` to
+build a side-by-side test APK without touching an existing release artifact:
+
+```bash
+SDK=/opt/android-sdk JAVA=/opt/jdk APK_NAME=dotpray-1.3-test.apk ./build.sh
+```
 
 Two details worth knowing if you touch the build:
 
@@ -199,9 +311,60 @@ time in Reykjavik in midwinter is the correct one.
 Reproduce it yourself:
 
 ```bash
-javac -d /tmp/tt -cp build/classes tools/TestTimes.java
+javac --release 8 -encoding UTF-8 -d /tmp/tt -cp build/classes tools/TestTimes.java
 java -cp /tmp/tt:build/classes TestTimes
 ```
+
+### Grace, language and widget-layout tests
+
+Both harnesses are plain JVM programs — no JUnit, no emulator, no Android
+device. They exit non-zero on the first failing check and are intentionally not
+packaged in the APK.
+
+`tools/TestGrace.java` covers the language rules (`normalize`, default English,
+RTL, locale, display casing), the five grace durations, exact 15-minute and
+10-minute boundaries, progress 100% → 0%, Isha crossing midnight, the capped
+grace at extreme latitudes, stable notification keys, every widget model, the
+resizable 326 × 150 dp / 150 × 150 dp geometry with its short-wide fallback,
+and the shared dotted-rail direction rules:
+
+```bash
+SDK=/opt/android-sdk JAVA=/opt/jdk ./build.sh
+javac --release 8 -encoding UTF-8 -cp build/classes -d build/test \
+    tools/TestGrace.java
+java -Dfile.encoding=UTF-8 -cp build/classes:build/test \
+    com.dotpray.app.prayer.TestGrace
+```
+
+`tools/TestLocale.java` reads `values/`, `values-ar/`, `arrays.xml`, every
+layout and the manifest directly. It checks string/plural parity, placeholder
+positions, Arabic singular/dual/plural forms, localized place names, hardcoded
+copy, the Alexandria font files and OFL licence, the resizable 4×2 / 3×3 /
+2×2 widget metadata, the three-option chooser, the per-widget configuration
+contract, the 0–100 transparency storage and renderer branches, the About
+credits, logo and location-card alignment, the Arabic **ويدجت** terminology,
+dotted-rail wiring and RTL, and that the old Almarai/dotted-Arabic
+implementation is gone:
+
+```bash
+javac --release 8 -encoding UTF-8 -d build/test tools/TestLocale.java
+java -Dfile.encoding=UTF-8 -cp build/test TestLocale
+```
+
+`tools/TestQibla.java` covers the angle rules behind the compass: 0–360
+normalization, shortest-arc turn direction, the 3° alignment test, east/west
+declination, zero-padded readings, the Cairo and London Qibla bearings, and the
+heading filter across north and after a long sensor gap:
+
+```bash
+javac --release 8 -encoding UTF-8 -cp build/classes -d build/test \
+    tools/TestQibla.java
+java -cp build/classes:build/test com.dotpray.app.prayer.TestQibla
+```
+
+At the time of writing: **185 checks** in `TestGrace`, **763 checks** in
+`TestLocale`, **34 checks** in `TestQibla`, and the numeric `TestTimes` harness
+all pass.
 
 ---
 
@@ -215,68 +378,123 @@ dotpray/
 │   ├── AndroidManifest.xml
 │   ├── java/com/dotpray/app/
 │   │   ├── MainActivity.java    single screen, countdown ticker, location
+│   │   ├── QiblaActivity.java   live Qibla compass screen
 │   │   ├── Api30.java           the only API-30 specific code
 │   │   ├── Perm.java            POST_NOTIFICATIONS literal (API 33+)
-│   │   ├── prayer/              PrayerCalculator, PrayerClock, Hijri, Qibla, fixed method
-│   │   ├── ui/                  DotFieldView, PulseDotView, GlyphArcView
-│   │   ├── widget/              providers, WidgetUpdater, WidgetRenderer, WidgetTick
-│   │   ├── alerts/              AlarmManager scheduling + notifications
-│   │   └── data/                Place, LocalityResolver, PrayerPrefs, ThemeController, Format
-│   └── res/                     layouts, dot-matrix drawables, Doto fonts, widget providers
+│   │   ├── prayer/              PrayerCalculator, PrayerClock, PrayerNames, ElapsedText, Hijri, Qibla, CompassMath
+│   │   ├── ui/                  DotFieldView, PulseDotView, QiblaCompassView, ProgressLineView, ProgressDots, WidgetSizeDialog
+│   │   ├── widget/              WidgetModel, WidgetLayout, providers, renderer, updater, WidgetConfigActivity, WidgetPrefs, alarms
+│   │   ├── alerts/              AlarmManager scheduling + localized notifications
+│   │   └── data/                Language, LocaleController, Place, PlaceNames, UiText, PrayerPrefs, ThemeController, Format
+│   └── res/                     layouts, values + values-ar, dot-matrix drawables, Doto + Alexandria fonts
 ├── tools/
 │   ├── TestTimes.java           JVM harness that prints the computed times
-│   ├── gen_live_digits.py       traces Doto digits into widget vector drawables
+│   ├── TestGrace.java           JVM tests for language, grace, grammar and widget geometry
+│   ├── TestLocale.java          JVM audit of every localized resource, layout and font
+│   ├── TestQibla.java           JVM tests for bearings, turns, alignment and sensor smoothing
+│   ├── check_widget_layouts.py  validates the three widget metadata files
+│   ├── shrink_colon.py          reduces and re-centres Doto's colon glyph
 │   ├── make_icons.py            regenerates launcher icons from the SVG
 │   ├── make_aso.py              builds the Google Play listing graphics
 │   └── render_preview.py        renders preview/*.png from the real layouts
 ├── aso/                         Play Store copy, screenshots, graphics, policy
-└── dist/dotpray-1.2.apk
+└── dist/dotpray-1.3.apk
 ```
 
 ### Design details
 
-* **App icon.** The coloured red circular mark is
-  `design/dotpray-icon.svg`; the monochrome sujood silhouette is
-  `design/dotpray-notification.svg`, vectorised as
-  `drawable/ic_notification.xml` for the status bar. Both sources use a square
-  view box and centre the mark, so the legacy, round, adaptive and
-  notification-large renders share the same optical centre.
-  `tools/make_icons.py` regenerates every launcher PNG, the adaptive foreground
-  and the coloured notification large icon with `rsvg-convert` and Pillow.
-* **Typeface.** Everything is set in
-  [Doto](https://fonts.google.com/specimen/Doto) (SIL Open Font License 1.1),
-  instanced to static regular/bold/black weights; there is no system font
-  anywhere in the UI. Doto draws 82-unit dots on a 100-unit pitch over a
-  1000-unit em. Licence: `app/src/main/assets/OFL-Doto.txt`.
-* **Dot matrix.** `DotFieldView` paints a faint 22 dp dot grid behind every
-  screen; `GlyphArcView` draws the dotted arc in the hero card; `PulseDotView`
-  animates the red "next prayer" dot.
+* **Typeface.** Latin copy, prayer times and countdowns are set
+  in [Doto](https://fonts.google.com/specimen/Doto) (SIL Open Font License 1.1),
+  instanced to static regular/bold/black weights. Arabic copy — including
+  numbers embedded in an Arabic label, such as a date or the elapsed sentence —
+  is set in [Alexandria](https://fonts.google.com/specimen/Alexandria) Regular
+  and SemiBold, also SIL OFL. The geometric Alexandria skeleton sits close to
+  Nothing's typography without pretending to be Doto. Arabic sizes are set
+  roughly 10–25% smaller than their English equivalents, because Alexandria's
+  Arabic body is taller than Doto's dot cap height at the same point size;
+  `values-ar/dimens.xml` and `WidgetRenderer.ARABIC_TEXT_SCALE` keep the two
+  languages optically equal. Doto's colon is reduced to 45% and re-centred on
+  the digit body while keeping its normal 600-unit advance, so time separators
+  stay quiet without opening gaps in the number; `tools/shrink_colon.py`
+  reproduces that patch. Both faces are bundled; there is no system font and no runtime
+  download. Licences: `app/src/main/assets/OFL-Doto.txt` and
+  `OFL-Alexandria.txt`.
+* **Arabic shaping.** `values-ar/` supplies ordinary Arabic strings, styles
+  switch the label face to Alexandria with zero letter-spacing, and Android's
+  HarfBuzz/ICU stack handles joining, ligatures and bidi. Nothing inserts,
+  reverses or shapes Arabic manually. Numeric styles deliberately keep Doto,
+  so times and countdowns match the English presentation; counts and
+  percentages inside localized copy are also formatted with Latin digits, even
+  when the phone itself is set to Arabic. The app and widgets mirror their
+  layouts through `supportsRtl` / `LayoutDirection.RTL`, and the dotted
+  progress rail advances from the right. Screen readers receive the same
+  localized text through the normal resource lookup.
+* **The Qibla dial.** `ui/QiblaCompassView.java` draws the instrument rather
+  than composing it from images: four thin rings, 5° dot markers, 10°/30°
+  spokes, an upright cardinal set and a red needle that passes behind the
+  letter masks. The dial rotates by the inverse of the true heading, so the
+  fixed top index always names the direction the phone is facing; the Qibla
+  needle stays on its absolute bearing. The alignment state is a short red rim
+  segment and a red top index, with a 180 ms fade or an instant cut when the
+  system disables animations. `prayer/CompassMath.java` owns normalization,
+  shortest-arc turns, tolerance and the 60 ms heading filter; the activity
+  applies the local declination and falls back to accelerometer + magnetometer
+  when no rotation-vector sensor exists. The screen follows the app's Light /
+  Dark choice: near-black in dark, technical paper in light, always a single
+  red Qibla mark. It is an Activity, not a RemoteViews surface, so the widgets
+  and their bitmap renderer are untouched.
+* **Grace state.** `PrayerClock.Snapshot` keeps the scheduled `previous` and
+  `next` instants and derives `graceEnd`, `graceActive()`, `elapsedMinutes()`,
+  `displayAt()` and `nextGraceEndMs()` from the wall clock. `WidgetModel`
+  packages the same decisions for every widget variant and the app hero, so a
+  restart, a clock jump or a location change cannot leave a counter behind.
+  The elapsed sentence comes from plural resources in both languages; Arabic
+  uses the full six-form grammar — `لحظات`, `دقيقة واحدة`, `دقيقتان`,
+  `3–10 دقائق`, then `11+ دقيقة` — with the prayer name in every form.
 * **Next-prayer progress.** `PrayerClock.Snapshot.progress()` maps the interval
-  from the previous prayer to the next into 0..1 without changing any
-  calculated time. The app hero uses `ProgressLineView` plus a `SINCE <prayer>`
-  and `% ELAPSED` caption; the wide widget turns its schedule divider into the
-  same rail, and the shorter wide resize keeps a rail at the bottom. The app
-  advances it every second; the widget advances it on its minute refresh.
+  from the end of the active grace period to the next Adhan into 0..1. It is
+  100% throughout the grace window and exactly 0% at the boundary where the
+  next prayer becomes the display. The app hero and the wide and small widgets
+  draw the same segmented rail via `ProgressDots`: 2 dp circles, 9 dp pitch,
+  accent for the completed part and `track` for what remains, filling from the
+  right in Arabic and from the left in English. The minimal widget omits the
+  rail. The app advances it on the minute boundary; the widgets advance it on
+  their minute refresh and book a separate non-wakeup alarm for the grace
+  boundary.
 * **The widget is mostly a drawing.** `widget/WidgetRenderer.java` composes
   the static card on a `Canvas` at the exact pixel size the launcher reports
-  and pushes it with `setImageViewBitmap`. The composition is authored once in
-  a 326 × 150 dp (wide) or 150 × 150 dp (compact) space and scaled uniformly.
-  The 2x2 card is one centred name/time/countdown stack. The wide card uses a
-  two-column hero: next prayer on the left; location, wall clock and dates on
-  the right; the five-prayer strip across the bottom. A shorter wide resize
-  drops the prayer strip and date lines rather than shrinking the focal
-  next-prayer block; no composition can collide when scaled. The whole card
-  is one click target (`wRoot`); settings live only in the app's bottom
-  button. This is what guarantees Doto on One UI, where `@font` inside
-  `RemoteViews` is ignored.
-  The seconds are Doto glyph vectors flipped by the launcher; the rest of the
-  clock and countdown is painted into the same bitmap and refreshed on the
-  minute boundary. That keeps the seconds moving in Doto without a background
-  service or a second-by-second alarm.
+  and pushes it with `setImageViewBitmap`. The wide composition is authored in
+  a 326 × 160 dp space and the compact compositions in a 150 × 150 dp space,
+  then scaled uniformly into the launcher's cells. A short wide widget
+  switches to a 104 dp hero and drops the dates and schedule strip instead of
+  shrinking every line. The compact cards are one centred name/time/countdown
+  stack; the small one has the dotted rail underneath, the minimal one does
+  not. During a grace their two localized lines replace the countdown and the
+  small card's rail moves down. The wide card uses a two-column hero: the
+  displayed prayer on the primary side; location, wall clock and dates on the
+  other; the five-prayer strip across the bottom. Arabic mirrors the whole
+  composition, including the schedule order and dot direction. All three
+  providers declare `resizeMode="horizontal|vertical"` with target cells and
+  readable resize bounds. All geometry lives in `WidgetLayout` and is checked
+  by the JVM tests. The whole card is one click target (`wRoot`); appearance is
+  chosen from the standard launcher configuration screen, and saved per
+  placement by `WidgetPrefs` rather than globally. This is what guarantees Doto
+  on One UI, where `@font` inside `RemoteViews` is ignored. The clock and
+  countdown are painted into the same bitmap and refreshed on the minute
+  boundary.
 * **Notifications** use an exact alarm at the prayer instant when the platform
   allows it, with `AlarmManager.setAndAllowWhileIdle` as the fallback. The
-  alert and the widget refresh are separate alarms, so a widget tick cannot
-  cancel a pending prayer alert.
+  title, body, place name and channel name/description resolve from the
+  selected language at send time. The alert and the widget refresh are
+  separate alarms, so a widget tick cannot cancel a pending prayer alert.
+
+---
+
+## Google Play assets
+
+The Play Store listing copy, five phone screenshots, feature graphic, 512 px
+icon, privacy policy and Data safety draft are in [`aso/`](aso/). Start with
+[`aso/README.md`](aso/README.md).
 
 ---
 
@@ -285,10 +503,9 @@ dotpray/
 The app targets `minSdk 26` (Android 8.0) and has been verified to compile and
 link against a real API 26 `android.jar`.
 
-Live seconds rely on `RemoteViews` layout placement APIs added in Android 12.
-On Android 8-11 the same Doto card falls back to an `HH:MM` wall clock and a
-minute-resolution countdown; on Android 12+ both fields tick every second
-inside the launcher.
+The clock and countdown use `HH:MM` on every supported version. The widget no
+longer depends on the Android 12 `RemoteViews` layout-placement APIs or on
+launcher-driven second views; it repaints from the app on the minute boundary.
 
 Two things that Android 8.0 does *not* have, and how they are handled:
 
@@ -304,6 +521,6 @@ Two things that Android 8.0 does *not* have, and how they are handled:
 ## Privacy
 
 No analytics, no ads, no crash reporting, no network permission at all. The
-only data the app stores is your last location and its name, theme choice, Asr
-school, clock format and alert preference — in a private `SharedPreferences`
-file on the device.
+only data the app stores is your last location and its name, app language,
+theme choice, Asr school, clock format and alert preference — in a private
+`SharedPreferences` file on the device.

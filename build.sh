@@ -21,11 +21,13 @@ ZIPALIGN="$BUILD_TOOLS/zipalign"
 
 MIN_SDK=26
 TARGET_SDK=35
-VERSION_CODE=17
-VERSION_NAME="1.2"
+VERSION_CODE=20
+VERSION_NAME="1.3"
 
 OUT="$ROOT/build"
-APK_NAME="dotpray-${VERSION_NAME}.apk"
+# APK_NAME can be overridden for an uncommitted test build without touching a
+# release artifact that may already exist in dist/.
+APK_NAME="${APK_NAME:-dotpray-${VERSION_NAME}.apk}"
 
 rm -rf "$OUT"
 mkdir -p "$OUT/compiled" "$OUT/gen" "$OUT/classes" "$OUT/dex" "$OUT/assets"
@@ -54,17 +56,18 @@ find "$ROOT/app/src/main/java" "$OUT/gen" -name '*.java' > "$OUT/sources.txt"
 # --release 8 keeps the java.* surface at Java 8 level (all of it exists on
 # API 26) while android.jar provides the platform classes. D8 desugars the
 # lambdas afterwards.
-javac --release 8 \
+JAVAC_LOG="$OUT/javac.log"
+if ! javac --release 8 \
     -classpath "$ANDROID_JAR" \
     -encoding UTF-8 \
     -nowarn \
     -d "$OUT/classes" \
-    @"$OUT/sources.txt" 2>&1 | grep -v 'bootstrap class path\|source value 8\|target value 8\|deprecat' || true
-
-if [ ! -d "$OUT/classes/com" ]; then
+    @"$OUT/sources.txt" >"$JAVAC_LOG" 2>&1; then
+    grep -v 'bootstrap class path\|source value 8\|target value 8' "$JAVAC_LOG" || true
     echo "✗ java compilation failed"
     exit 1
 fi
+grep -v 'bootstrap class path\|source value 8\|target value 8\|deprecat' "$JAVAC_LOG" || true
 
 echo "▸ dexing"
 java -cp "$D8" com.android.tools.r8.D8 \

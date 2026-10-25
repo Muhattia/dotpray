@@ -3,30 +3,26 @@
 All screenshots are **1080 × 1920** (9:16), RGB PNG, ready for the phone
 screenshot slot. The five app screens are composed from the layout-accurate
 previews in `preview/`; the actual app uses the same layouts and colours.
-`06-team.png` is a credits card built from the supplied portraits.
 
 | # | File | Headline | Supporting line | Job |
 |---|---|---|---|---|
-| 1 | `01-prayer-times.png` | PRAYER TIMES, WITHOUT THE NOISE. | The next prayer, a live countdown, and the full day — on one quiet screen. | Show the core product immediately. |
-| 2 | `02-live-countdown.png` | EVERY SECOND COUNTS. | A countdown that moves every second, with a rail from the last prayer. | Make the live countdown the hook. |
-| 3 | `03-widgets.png` | YOUR NEXT PRAYER, AT A GLANCE. | Two widget sizes: a wide 4×2 schedule or a compact 2×2 clock. | Show the home-screen habit. |
-| 4 | `04-themes.png` | DARK. LIGHT. YOUR CHOICE. | Follow the system, or keep it fixed. Both widgets follow. | Show personalization and polish. |
+| 1 | `01-prayer-times.png` | PRAYER TIMES, WITHOUT THE NOISE. | The next prayer, a countdown, and the full day — on one quiet screen. | Show the core product immediately. |
+| 2 | `02-live-countdown.png` | EVERY MINUTE COUNTS. | A calm countdown, with a rail from the last prayer. | Make the countdown the hook. |
+| 3 | `03-widgets.png` | YOUR NEXT PRAYER, AT A GLANCE. | Three widget layouts: a wide 4×2 schedule, a small 3×3 with the elapsed rail, or a minimal 2×2 without it. | Show the home-screen habit. |
+| 4 | `04-themes.png` | DARK. LIGHT. YOUR CHOICE. | Follow the system, or keep it fixed. All widgets follow. | Show personalization and polish. |
 | 5 | `05-private.png` | PRIVATE BY DEFAULT. | A prayer app with no server. | Close with no ads, no tracking, and no INTERNET permission. |
-| 6 | `06-team.png` | TWO PEOPLE. ONE QUIET APP. | Developed by Muhammad Attia. Original idea by Muhammad M. Hemdan. | Optional credits card: the people and the open-source repo. |
 
 ## Why this order
 
 - **Screenshot 1** answers “what is this?” without requiring the user to read
   the description.
 - **Screenshot 2** shows the one thing a static prayer-times app cannot do:
-  a countdown that feels alive.
+  a countdown that stays current.
 - **Screenshot 3** moves the value onto the home screen, where the app is meant
   to live.
 - **Screenshot 4** proves the design is intentional in both themes.
 - **Screenshot 5** closes with the sharpest differentiator: no ads, no
   tracking, and no `INTERNET` permission.
-- **Screenshot 6 (optional)** puts the two people and the public repo on the
-  final card. Keep it last; the five app screens do the product selling.
 
 ## Text rules used
 
@@ -35,19 +31,17 @@ previews in `preview/`; the actual app uses the same layouts and colours.
 - Supporting line under 90 characters.
 - No “Download now”, “Install”, star ratings, awards, or competitor logos.
 - No fake UI or features the app does not have.
-- Red is reserved for the live/next-prayer accent, the privacy points, and the
-  credits links.
+- Red is reserved for the next-prayer accent and the privacy points.
 
 ## Before publishing
 
 The five app screens are marketing renders, not literal device captures. They
 mirror the real layouts, but a final QA pass on a physical device is still
-recommended. `06-team.png` is a credits card, not an app UI capture; use it
-only if you want the listing to close on the team, and omit it if you prefer a
-pure app-screenshot set.
+recommended.
 
-1. Install `dist/dotpray-1.2.apk` on a phone.
+1. Install `dist/dotpray-1.3.apk` on a phone.
 2. Set the location to Cairo and the theme to Dark, then check screenshot 1.
-3. Add both widgets and confirm the wide/compact layouts and live seconds.
-4. If any system font fallback or launcher difference changes the layout,
+3. Add all three widgets and confirm the wide/small/minimal layouts, the elapsed rail, resize handles, and the grace state a minute after a prayer.
+4. Switch App Language to العربية and confirm the RTL layout, Alexandria labels, localized widgets and notifications.
+5. If any system font fallback or launcher difference changes the layout,
    replace the affected render with a real device capture at 1080 × 1920.
