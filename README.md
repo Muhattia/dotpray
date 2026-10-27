@@ -395,9 +395,7 @@ dotpray/
 │   ├── check_widget_layouts.py  validates the three widget metadata files
 │   ├── shrink_colon.py          reduces and re-centres Doto's colon glyph
 │   ├── make_icons.py            regenerates launcher icons from the SVG
-│   ├── make_aso.py              builds the Google Play listing graphics
 │   └── render_preview.py        renders preview/*.png from the real layouts
-├── aso/                         Play Store copy, screenshots, graphics, policy
 └── dist/dotpray-1.3.apk
 ```
 
@@ -487,14 +485,6 @@ dotpray/
   title, body, place name and channel name/description resolve from the
   selected language at send time. The alert and the widget refresh are
   separate alarms, so a widget tick cannot cancel a pending prayer alert.
-
----
-
-## Google Play assets
-
-The Play Store listing copy, five phone screenshots, feature graphic, 512 px
-icon, privacy policy and Data safety draft are in [`aso/`](aso/). Start with
-[`aso/README.md`](aso/README.md).
 
 ---
 
